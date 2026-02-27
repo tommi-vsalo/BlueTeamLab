@@ -1,0 +1,60 @@
+# Prototype Configurations
+
+This document lists the necessary configurations that have to be implemented for the prototype build. 
+
+## 1. Virtual Machines
+
+The prototype build consists of four virtual machines
+
+- **Ansible Controller**: Configures the other three VMs.
+
+- **Windows Server**: Domain controller, sends logging files to the logging server.
+
+- **Windows Client**: Client machine within the domain, origin of scripted attacks.
+
+- **Logging Server**: Collects and displays logs from the windows server.
+
+## 2. OpenTofu
+
+OpenTofu is utilized to provision the VMs with the following specifications and configurations.
+
+### Network Design
+
+**Adapter 1 (NAT)**
+
+- Provides internet access for updates and package installation.
+
+- DHCP assigned by VirtualBox.
+
+**Adapter 2 (Internal: lab-int)**
+
+- Used for all internal traffic.
+
+- Subnet: `10.10.10.0/24`.
+
+- Static IP assigned upon provisioning.
+
+- Internal adapter has no gateway configured.
+
+**DNS Configuration**
+
+- `dc01` acts as internal DNS server.
+
+- `cl01` and `log01` use `10.10.10.20/24` as DNS
+
+### Table of Specifications
+
+Name, image, CPU, RAM, Disk size, NIC order (NAT 1st, internal network 2nd)
+
+### Table of Configurations
+
+| Virtual Machine | Hostname | Network | IP-Address |
+|----------|----------|----------|----------|
+| Ansible Controller | ansible-con | NAT (DHCP), Internal: lab-int | 10.10.10.10/24 |
+| Windows Server | dc01 | NAT (DHCP), Internal: lab-int | 10.10.10.20/24 |
+| Windows Client | cl01 | NAT (DHCP), Internal: lab-int | 10.10.10.30/24 |
+| Logging Server | log01 | NAT (DHCP), Internal: lab-int | 10.10.10.40/24 |
+
+Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted at this stage or Ansible will not work.
+
+## 3. Ansible
