@@ -46,6 +46,8 @@ OpenTofu uses the following specifications and configurations.
 
 - Internal adapter has no gateway configured.
 
+- DNS provided by `10.10.10.20)´
+
 **DNS Configuration**
 
 - `dc01` acts as internal DNS server.
