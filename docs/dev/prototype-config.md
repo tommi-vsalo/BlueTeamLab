@@ -16,7 +16,17 @@ The prototype build consists of four virtual machines
 
 ## 2. OpenTofu
 
-OpenTofu is utilized to provision the VMs with the following specifications and configurations.
+OpenTofu is used to deploy basic virtual machines using `VBoxManage` and the OVA import tool. 
+It handles:
+
+- VM creation (import from OVA)
+- CPU/RAM/VRAM settings
+- Network adapter configuration  
+- Automatic delete on `tofu destroy`  
+- Name assignment
+
+
+OpenTofu uses the following specifications and configurations.
 
 ### Network Design
 
