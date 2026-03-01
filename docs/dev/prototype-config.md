@@ -56,6 +56,7 @@ It handles:
 
 - `cl01` and `log01` use `10.10.10.20/24` as DNS
 
+
 ### Table of Specifications
 
 Name, image, CPU, RAM, Disk size, NIC order.
@@ -67,6 +68,7 @@ Name, image, CPU, RAM, Disk size, NIC order.
 | Windows Client | cl01 | konetesti.ova | 2 | 4096 | 128 | 50,00 GB | NAT | lab-int |
 | Logging Server | log01 | testikone.ova | 2 | 4096 | 16 | 25,00 GB | NAT | lab-int |
 
+
 ### Table of Configrations
 
 
@@ -76,6 +78,27 @@ Name, image, CPU, RAM, Disk size, NIC order.
 | Windows Server      | dc01        | NAT (DHCP), Internal: lab-int    | 10.10.10.20/24   |
 | Windows Client      | cl01        | NAT (DHCP), Internal: lab-int    | 10.10.10.30/24   |
 | Logging Server      | log01       | NAT (DHCP), Internal: lab-int    | 10.10.10.40/24   |
+
+
+### What OpenTofu **can** configure?
+
+OpenTofu (with PowerShell + VBoxManage) can configure the following:
+- VM name.  
+- CPU count.  
+- RAM size.  
+- VRAM size.  
+- NIC1 (NAT) and NIC2 (Internal) order.  
+- OVA import.  
+- VM deletion (`unregistervm --delete`).
+
+### And Opentofu **cannot** configure?
+
+It cannot configure following:
+- Windows domain services.  
+- AD setup.  
+- Wazuh / Graylog. 
+- WinRM (already done in base image). 
+- Any OS-level configuration.
 
 
 Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted at this stage or Ansible will not work.
