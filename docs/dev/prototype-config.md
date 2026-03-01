@@ -93,7 +93,7 @@ OpenTofu (with PowerShell + VBoxManage) can configure the following:
 
 ### And what Opentofu **cannot** configure?
 
-It cannot configure following:
+It cannot configure the following things:
 - Windows domain services.  
 - AD setup.  
 - Wazuh / Graylog. 
