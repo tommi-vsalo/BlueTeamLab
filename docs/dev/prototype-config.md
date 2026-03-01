@@ -4,7 +4,7 @@ This document lists the necessary configurations that have to be implemented for
 
 ## 1. Virtual Machines
 
-The prototype build consists of four virtual machines
+The prototype build consists of four virtual machines. This document defines their configurations, networks and OpenTofu provisioning details.
 
 - **Ansible Controller**: Configures the other three VMs.
 
@@ -46,7 +46,6 @@ OpenTofu uses the following specifications and configurations.
 
 - Internal adapter has no gateway configured.
 
-- DNS provided by `10.10.10.20´
 
 **DNS Configuration**
 
