@@ -61,7 +61,7 @@ It handles:
 Name, image, CPU, RAM, Disk size, NIC order.
 
 | Virtual Machine | Hostname | OVA image | CPU | RAM (MB) | VRAM | Disk size | NIC1 | NIC2 |
-|----------|----------|----------|----------|
+|----------|----------|----------|----------|----------|----------|----------|----------|----------|
 | Ansible Controller | ansible-con | testikone.ova | 2 | 4096 | 16 | 25,00 GB | NAT | lab-int |
 | Windows Server | dc01 | konetesti.ova | 2 | 4096 | 128 | 50,00 GB | NAT | lab-int |
 | Windows Client | cl01 | konetesti.ova | 2 | 4096 | 128 | 50,00 GB | NAT | lab-int |
