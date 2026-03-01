@@ -25,8 +25,11 @@ It handles:
 - Automatic delete on `tofu destroy`  
 - Name assignment
 
+### Base Images
 
-OpenTofu uses the following specifications and configurations.
+- Ubuntu base OVA: **testikone.ova**  
+- Windows base OVA: **konetesti.ova** 
+
 
 ### Network Design
 
