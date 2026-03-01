@@ -91,7 +91,7 @@ OpenTofu (with PowerShell + VBoxManage) can configure the following:
 - OVA import.  
 - VM deletion (`unregistervm --delete`).
 
-### And Opentofu **cannot** configure?
+### And what Opentofu **cannot** configure?
 
 It cannot configure following:
 - Windows domain services.  
