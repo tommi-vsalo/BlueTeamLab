@@ -2,7 +2,7 @@
 
 This document lists the necessary configurations that have to be implemented for the prototype build in order to deploy a ready lab environment.
 
-## 1. Virtual Machines
+## Virtual Machines
 
 The prototype build consists of four virtual machines. This document defines their configurations, networks and OpenTofu provisioning details.
 
@@ -15,7 +15,7 @@ The prototype build consists of four virtual machines. This document defines the
 - **Logging Server**: Collects and displays logs from the windows server.
 
 
-## 2. OpenTofu
+## OpenTofu
 
 OpenTofu is used to deploy basic virtual machines using `VBoxManage` and the OVA import tool. 
 It handles:
@@ -68,7 +68,7 @@ It handles:
 | Logging Server | log01 | testikone.ova | 2 | 4096 | 16 | 25,00 GB | NAT | lab-int |
 
 
-### Table of Configrations
+### Table of Configurations
 
 
 | Virtual Machine     | Hostname    | Network                         | IP-Address       |
@@ -90,7 +90,7 @@ OpenTofu (with PowerShell + VBoxManage) can configure the following:
 - OVA import.  
 - VM deletion (`unregistervm --delete`).
 
-### And what Opentofu **cannot** configure?
+### And what OpenTofu **cannot** configure?
 
 It cannot configure the following things:
 - Windows domain services.  
@@ -101,7 +101,7 @@ It cannot configure the following things:
 Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted at this stage or Ansible will not work.
 
 
-## 3. Ansible
+## Ansible
 
 Ansible is used to configure the virtual machines after provisioning to provide a ready lab environment. The configurations have to be applied in the following order to ensure the environment functions:
 
@@ -111,7 +111,7 @@ Ansible is used to configure the virtual machines after provisioning to provide 
 - Install Active Directory services
 - Promote server to Domain Controller
 - Create new forest `blueteamlab.local`
-- Configure DNS (Host)
+- Configure DNS `10.10.10.20`
 - Reboot after promotion
 
 ### Step 2 - Domain Client Configuration
@@ -124,13 +124,28 @@ Ansible is used to configure the virtual machines after provisioning to provide 
 ### Step 3 - AD Configuration
 
 **Windows Server**: 
+- Create Organizational Units
 - Create new user account
+- Create service account with SPN
+- Enable advanced audit policies:
+  -  Logon events
+  -  Kerberos Service Ticket Operations
+  -  Directory Service Access
 
 ### Step 4 - Logging Setup
-- Install Graylog
-- Enable log ingestion from `dc01`
+
+**Logging Server**:
+- Install Graylog and required dependencies (utilize maintained public role OR dockerized)
+- Configure log input from `dc01`
+
+**Windows Server**: 
+- Install Winlogbeat
+- Configure output to `log01`
+- Restart logging service
 
 ### Step 5 - Scripted Attack Setup
-- Load scripted attack to `cl01`
 
+**Windows Client**:
+- Load scripted attack
 
+Ansible configuration should be tested incrementally to ensure each step functions as it is supposed to.
