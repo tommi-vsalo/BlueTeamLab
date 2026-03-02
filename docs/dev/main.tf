@@ -6,13 +6,13 @@ terraform {
 
 provider "null" {}
 
-# Rakenna OVA-polut: absolute + Windowsin \ -> /
+
 locals {
   ubuntu_ova  = replace(abspath("${path.module}/images/testikone.ova"), "\\", "/")
   windows_ova = replace(abspath("${path.module}/images/konetesti.ova"), "\\", "/")
 }
 
-# Yhteinen import-skripti (heredoc HCL:lle, ei viittauksia destroyssa tähän!)
+
 locals {
   import_ps = <<-PS
     $name = $env:NAME
@@ -47,7 +47,7 @@ resource "null_resource" "ansible" {
     }
   }
 
-  # Destroy: ei viittauksia localsiin -> suora heredoc per resource
+  
   provisioner "local-exec" {
     when        = destroy
     interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
@@ -144,4 +144,5 @@ resource "null_resource" "winclient" {
       exit 0
     PS
   }
+
 }
