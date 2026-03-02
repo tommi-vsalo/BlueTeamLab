@@ -55,7 +55,7 @@ It handles:
 
 - `dc01` acts as internal DNS server.
 
-- `cl01` and `log01` use `10.10.10.20/24` as DNS
+- `cl01` and `log01` use `10.10.10.20` as DNS
 
 
 ### Table of Specifications
@@ -96,8 +96,7 @@ It cannot configure the following things:
 - Windows domain services.  
 - AD setup.  
 - Wazuh / Graylog. 
-- WinRM (already done in base image). 
-- Any OS-level configuration.
+- WinRM (already done in base image).
 
 Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted at this stage or Ansible will not work.
 
@@ -106,19 +105,32 @@ Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted 
 
 Ansible is used to configure the virtual machines after provisioning to provide a ready lab environment. The configurations have to be applied in the following order to ensure the environment functions:
 
-### Step 1.
+### Step 1 - Domain Controller Setup
 
 **Windows Server**:
 - Install Active Directory services
-- Promote to domain controller in new forest `blueteamlab.local`
+- Promote server to Domain Controller
+- Create new forest `blueteamlab.local`
+- Configure DNS (Host)
+- Reboot after promotion
 
-### Step 2.
+### Step 2 - Domain Client Configuration
 
 **Windows Client**: 
+- Configure DNS `10.10.10.20`
 - Join domain `blueteamlab.local`
+- Reboot after domain join
+
+### Step 3 - AD Configuration
 
 **Windows Server**: 
-- Create new user 
+- Create new user account
 
+### Step 4 - Logging Setup
+- Install Graylog
+- Enable log ingestion from `dc01`
+
+### Step 5 - Scripted Attack Setup
+- Load scripted attack to `cl01`
 
 
