@@ -1,6 +1,6 @@
 # Prototype Configurations
 
-This document lists the necessary configurations that have to be implemented for the prototype build. 
+This document lists the necessary configurations that have to be implemented for the prototype build in order to deploy a ready lab environment.
 
 ## 1. Virtual Machines
 
@@ -14,6 +14,7 @@ The prototype build consists of four virtual machines. This document defines the
 
 - **Logging Server**: Collects and displays logs from the windows server.
 
+
 ## 2. OpenTofu
 
 OpenTofu is used to deploy basic virtual machines using `VBoxManage` and the OVA import tool. 
@@ -25,11 +26,11 @@ It handles:
 - Automatic delete on `tofu destroy`  
 - Name assignment
 
+
 ### Base Images
 
 - Ubuntu base OVA: **testikone.ova**  
 - Windows base OVA: **konetesti.ova** 
-
 
 ### Network Design
 
@@ -58,8 +59,6 @@ It handles:
 
 
 ### Table of Specifications
-
-Name, image, CPU, RAM, Disk size, NIC order.
 
 | Virtual Machine | Hostname | OVA image | CPU | RAM (MB) | VRAM | Disk size | NIC1 | NIC2 |
 |----------|----------|----------|----------|----------|----------|----------|----------|----------|
@@ -100,8 +99,26 @@ It cannot configure the following things:
 - WinRM (already done in base image). 
 - Any OS-level configuration.
 
-
 Necessary Ansible preparations (SSH keys, WinRM, etc.) also have to be inserted at this stage or Ansible will not work.
 
 
 ## 3. Ansible
+
+Ansible is used to configure the virtual machines after provisioning to provide a ready lab environment. The configurations have to be applied in the following order to ensure the environment functions:
+
+### Step 1.
+
+**Windows Server**:
+- Install Active Directory services
+- Promote to domain controller in new forest `blueteamlab.local`
+
+### Step 2.
+
+**Windows Client**: 
+- Join domain `blueteamlab.local`
+
+**Windows Server**: 
+- Create new user 
+
+
+
