@@ -53,7 +53,7 @@ ansible-playbook -i inventory/hosts.ini playbook.yml --become -K
 
 ## Key commands you can reuse
 
-### Test host reachability via Ansible
+### Test host ping via Ansible
 ```bash
 ansible -i inventory/hosts.ini lab1 -m ping
 ```
@@ -61,11 +61,6 @@ ansible -i inventory/hosts.ini lab1 -m ping
 ### Run playbook
 ```bash
 ansible-playbook -i inventory/hosts.ini playbook.yml
-```
-
-### Target only one host (optional)
-```bash
-ansible-playbook -i inventory/hosts.ini playbook.yml -l machine
 ```
 
 ---
