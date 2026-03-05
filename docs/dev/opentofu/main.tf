@@ -6,7 +6,7 @@ terraform {
 
 provider "null" {}
 
-
+# Rakenna OVA-polut: absolute + Windowsin \ -> /
 locals {
   ubuntu_ova  = replace(abspath("${path.module}/images/testikone.ova"), "\\", "/")
   windows_ova = replace(abspath("${path.module}/images/konetesti.ova"), "\\", "/")
@@ -47,6 +47,23 @@ resource "null_resource" "ansible" {
     }
   }
 
+
+ provisioner "local-exec" {
+    interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    command = <<-PS
+      $name = "Ansible-Controller"
+
+      VBoxManage modifyvm $name --cpus 2
+      VBoxManage modifyvm $name --memory 4096
+      VBoxManage modifyvm $name --vram 16
+      VBoxManage modifyvm $name --nic1 nat
+      VBoxManage modifyvm $name --nic2 intnet
+      VBoxManage modifyvm $name --intnet2 "lab-int"
+    PS
+  }
+
+
+
   
   provisioner "local-exec" {
     when        = destroy
@@ -77,6 +94,21 @@ resource "null_resource" "logging" {
     }
   }
 
+provisioner "local-exec" {
+    interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    command = <<-PS
+      $name = "Logging-Server"
+
+      VBoxManage modifyvm $name --cpus 2
+      VBoxManage modifyvm $name --memory 4096
+      VBoxManage modifyvm $name --vram 16
+      VBoxManage modifyvm $name --nic1 nat
+      VBoxManage modifyvm $name --nic2 intnet
+      VBoxManage modifyvm $name --intnet2 "lab-int"
+    PS
+  }
+
+
   provisioner "local-exec" {
     when        = destroy
     interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
@@ -105,6 +137,21 @@ resource "null_resource" "winserver" {
       OVA  = local.windows_ova
     }
   }
+
+provisioner "local-exec" {
+    interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    command = <<-PS
+      $name = "Windows-Server"
+
+      VBoxManage modifyvm $name --cpus 2
+      VBoxManage modifyvm $name --memory 4096
+      VBoxManage modifyvm $name --vram 128
+      VBoxManage modifyvm $name --nic1 nat
+      VBoxManage modifyvm $name --nic2 intnet
+      VBoxManage modifyvm $name --intnet2 "lab-int"
+    PS
+  }
+
 
   provisioner "local-exec" {
     when        = destroy
@@ -135,6 +182,21 @@ resource "null_resource" "winclient" {
     }
   }
 
+provisioner "local-exec" {
+    interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    command = <<-PS
+      $name = "Windows-Client"
+
+      VBoxManage modifyvm $name --cpus 2
+      VBoxManage modifyvm $name --memory 4096
+      VBoxManage modifyvm $name --vram 128
+      VBoxManage modifyvm $name --nic1 nat
+      VBoxManage modifyvm $name --nic2 intnet
+      VBoxManage modifyvm $name --intnet2 "lab-int"
+    PS
+  }
+
+
   provisioner "local-exec" {
     when        = destroy
     interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
@@ -144,5 +206,4 @@ resource "null_resource" "winclient" {
       exit 0
     PS
   }
-
 }
