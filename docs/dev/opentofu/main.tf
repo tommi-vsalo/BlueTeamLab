@@ -6,7 +6,7 @@ terraform {
 
 provider "null" {}
 
-# Rakenna OVA-polut: absolute + Windowsin \ -> /
+
 locals {
   ubuntu_ova  = replace(abspath("${path.module}/images/testikone.ova"), "\\", "/")
   windows_ova = replace(abspath("${path.module}/images/konetesti.ova"), "\\", "/")
