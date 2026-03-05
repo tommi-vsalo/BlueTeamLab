@@ -1,11 +1,6 @@
-# Prototype Configurations (OpenTofu)
+# Prototype Configurations (Ansible)
 
-This document lists the necessary configurations that have to be implemented for the prototype build in order to deploy a ready lab environment.
-
-
-## Ansible
-
-Ansible is used to configure the virtual machines after provisioning to provide a ready lab environment. The configurations have to be applied in the following order to ensure the environment functions:
+This document lists the necessary Ansible configurations that have to be implemented for the prototype build. Ansible is used to configure the virtual machines within the lab environment.
 
 
 ### Table of Configurations
