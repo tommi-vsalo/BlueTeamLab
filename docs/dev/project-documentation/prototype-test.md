@@ -26,3 +26,13 @@ Upon inspection in VirtualBox, all the VMs seem to be configured according to sp
 
 <img width="1194" height="423" alt="image" src="https://github.com/user-attachments/assets/c116301f-0f83-4bd7-aa3d-2f12dacf85a5" />
 
+The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by switching from `VMSVGA` to `VBoxSVGA` in the display settings.
+
+## OpenTofu Questions
+
+The following list contains questions that should be answered for the prototype stage:
+
+- Where should the `.OVA` -images be stored so that the user can download them easily?
+- What should the images exactly contain (Static IP, WinRM etc.) --> this will be answered during Ansible testing.
+- What kind of documentation does the user need to provision the machines on their host (Windows, Linux)?
+- Are there any manual setting up stages that can be removed prior to release?
