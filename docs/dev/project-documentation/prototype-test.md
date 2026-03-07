@@ -26,7 +26,9 @@ Upon inspection in VirtualBox, all the VMs seem to be configured according to sp
 
 <img width="1194" height="423" alt="image" src="https://github.com/user-attachments/assets/c116301f-0f83-4bd7-aa3d-2f12dacf85a5" />
 
-The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by switching from `VMSVGA` to `VBoxSVGA` in the display settings.
+The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by switching from `VMSVGA` to `VBoxSVGA` in the display settings. The performance on the Ubuntu machine was initially very poor, until I inserted guest additions and updates & upgrades.
+
+Many quality of life features should be baked into the images, like Finnish keyboard, bidirectional clipboard, guest additions etc.
 
 ## OpenTofu Questions
 
