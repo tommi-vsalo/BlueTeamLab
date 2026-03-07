@@ -1,10 +1,10 @@
 # Prototype Configurations (OpenTofu)
 
-This document lists the necessary configurations that have to be implemented for the prototype build in order to deploy a ready lab environment.
+This document lists the virtual machine and machine image specifications that have to be implemented for the prototype build.
 
 ## Virtual Machines
 
-The prototype build consists of four virtual machines. This document defines their configurations, networks OpenTofu provisioning details and Ansible configuration details.
+The prototype build consists of four virtual machines.
 
 - **Ansible Controller**: Configures the other three VMs.
 
@@ -30,7 +30,7 @@ It handles:
 ### Base Images
 
 - Ubuntu base OVA: **testikone.ova**  
-- Windows base OVA: **konetesti.ova** 
+- Windows base OVA: **konetesti.ova**
 
 ### Network Design
 
