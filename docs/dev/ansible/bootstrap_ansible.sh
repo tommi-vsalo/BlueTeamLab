@@ -45,7 +45,3 @@ echo "Created:"
 echo "  $PROJECT_DIR/"
 echo "    inventory/"
 echo "    playbooks/"
-echo
-echo "Next (create files manually):"
-echo "  nano $INVENTORY_DIR/hosts.ini"
-echo "  nano $PLAYBOOKS_DIR/setup.yml"
