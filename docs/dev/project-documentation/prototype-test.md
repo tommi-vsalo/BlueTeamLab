@@ -1,7 +1,7 @@
 # Prototype Testing Documentation
 This document records the steps taken to test the environment in practice. The tests were done on a Windows host.
 
-## Environment Setup
+## OpenTofu Setup
 
 I first made sure I had up to date versions of OpenTofu and VirtualBox.
 <img width="593" height="70" alt="tofu_virtualbox" src="https://github.com/user-attachments/assets/36307142-1864-405f-9a89-6db7f3e65b95" />
@@ -26,11 +26,11 @@ Upon inspection in VirtualBox, all the VMs seem to be configured according to sp
 
 <img width="1194" height="423" alt="image" src="https://github.com/user-attachments/assets/c116301f-0f83-4bd7-aa3d-2f12dacf85a5" />
 
-The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by switching from `VMSVGA` to `VBoxSVGA` in the display settings. The performance on the Ubuntu machine was initially very poor, until I inserted guest additions and updates & upgrades.
+The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by pressing F12 to begin the boot sequence.
 
-Many quality of life features should be baked into the images, like Finnish keyboard, bidirectional clipboard, guest additions etc.
+Many quality of life features should be baked into the images, like Finnish keyboard, bidirectional clipboard, guest additions etc. if possible. This reduces the amount of work the end user has to do.
 
-## OpenTofu Questions
+### OpenTofu Questions
 
 The following list contains questions that should be answered for the prototype stage:
 
@@ -38,3 +38,21 @@ The following list contains questions that should be answered for the prototype 
 - What should the images exactly contain (Static IP, WinRM etc.) --> this will be answered during Ansible testing.
 - What kind of documentation does the user need to provision the machines on their host (Windows, Linux)?
 - Are there any manual setting up stages that can be removed prior to release?
+
+## Ansible Setup
+
+The images currently lack the necessary additions to have Ansible work right away, so I manually set these in place.
+
+I started by setting up static IPs on the `Ansible-Controller` and `Windows-Server` according to the documentation.
+
+<img width="333" height="74" alt="image" src="https://github.com/user-attachments/assets/db0addc8-0cfe-4592-a6d6-decf3e5ce39a" />
+
+<img width="829" height="696" alt="image" src="https://github.com/user-attachments/assets/5fbcea6b-ef6b-48ed-9622-538d508aeebc" />
+
+Next I allowed traffic on the firewall and as a result, the pings went through.
+
+<img width="486" height="167" alt="image" src="https://github.com/user-attachments/assets/a72d290c-a42d-43c3-a2e1-520941da0be9" />
+
+
+
+
