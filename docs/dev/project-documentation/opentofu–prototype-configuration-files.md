@@ -40,9 +40,11 @@ All machines are created from prebuilt OVA images.
 
 ## What OpenTofu does technically
 
-**1. Imports the VM from OVA**
-OpenTofu calls PowerShell + VBoxManage import
-→ VM is created only if it does not already exist.
+**1. Import OVA images**
+For each VM:
+- Check if a VM with the same name exists
+- If not: import the correct OVA image
+- Assign the VM name
 
 
 **2. Applies hardware configuration**
@@ -58,7 +60,7 @@ All VMs have:
 - NIC2 = “lab-int” (internal lab network)
 
 **4. Handles VM deletion**
-tofu destroy runs:
+`tofu destroy` runs:
 `VBoxManage unregistervm --delete`
 
 This removes the VM cleanly from VirtualBox.
@@ -112,8 +114,12 @@ images/konetesti.ova
 `tofu init`
 `tofu apply`
 
-After these commands four fully configured VMs will appear in VirtualBox.
-This provides a complete, reproducible Prototype environment.
+OpenTofu will:
+- Import OVA images
+- Configure CPU/RAM/VRAM
+- Create NAT + lab-int networking
+- Register VMs in VirtualBox
+- Produce a fully reproducible prototype environment
 
 
 
