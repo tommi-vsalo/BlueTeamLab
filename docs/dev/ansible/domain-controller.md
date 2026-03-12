@@ -1,7 +1,7 @@
 # What the code does
 
 ## Overview
-This playbook performs **Step 1 - Domain Controller Setup** on the Windows server **dc01**:
+This playbook performs **Domain Controller Setup** on the Windows server **dc01**:
 
 - Installs the Active Directory Domain Services role (AD DS) and management tools
 - Promotes the server to a Domain Controller
