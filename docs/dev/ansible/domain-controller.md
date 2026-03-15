@@ -193,7 +193,7 @@ After reboot, Ansible waits until WinRM (HTTP) is available again on port **5985
 
 Now for running the playbook we use command `ansible-playbook -i inventory/hosts.ini playbooks/domain_controller_promotion.yml`. The code line `hosts: dc01` makes it so it only runs on dc01 and not other computers.
 
-#Problem
+# Problem
 
 This is where i ran in to a big problem that makes it impossible for me to run the playbook and/or make the Server a domain controller. The problem is that it is not a Server but a normal Windows 10 Pro. and a Windows 10 Pro can not install or become a domain controller
 
