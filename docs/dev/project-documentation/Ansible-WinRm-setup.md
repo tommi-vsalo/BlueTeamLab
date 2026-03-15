@@ -90,11 +90,41 @@ i got answer:
 Connection to 10.10.10.20 5985 port [tcp/*] succeeded!
 ```
 
+---
+
+# ansible configurations
+Now that we have established a connection between the computer we need to tell ansible also where and how to access the computers.
+To begin we create a file named ```hosts.ini``` inside the inventory folder.
+
+```bash
+[windows]
+dc01 ansible_host=10.10.10.20
+cl01 ansible_host=10.10.10.30
+
+[windows:vars]
+ansible_connection=winrm
+ansible_port=5985
+ansible_winrm_transport=ntlm
+ansible_winrm_server_cert_validation=ignore
+ansible_user=pihla
+ansible_password=l48r4
+```
+(the username and password is the one for the windows computer)
+I already added the windows client already but i am expecting a errror message when running becouse i have not yet configured WinRm for the client (done exactly the same way as for server)
+
+Now when running the command ```ansible -i hosts.ini windows -m ansible.windows_ping```
+
+i get the following message
+
+![screenshot](https://haagahelia-my.sharepoint.com/:i:/r/personal/bhi015_myy_haaga-helia_fi/Documents/bhi015.github.io/Screenshot%202026-03-15%20164729.png?csf=1&web=1&e=2w3Rdq)
+
 This is what we wanted and now we have:
 
 * installed ansible on the controller
 * enabled WinRm on the client 
 * verified that the port is open
+* added the computers to the hosts.ini file
+* verified that ansible can access the computers
 
 
 
