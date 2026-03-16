@@ -34,12 +34,14 @@ One Ubuntu OVA can NOT be two different roles if IPs need to be baked in. So I m
 ### testikone-ansible
 Contains:
 enp0s8 → 10.10.10.10/24
+
 hostname → ansible-con
 
 
 ### testikone-logging
 Contains:
 enp0s8 → 10.10.10.40/24
+
 hostname → log01
 
 
