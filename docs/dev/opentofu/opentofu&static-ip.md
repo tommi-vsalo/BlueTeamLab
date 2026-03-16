@@ -7,8 +7,7 @@ The goal was to automatically set up:
 - Windows Client (cl01)
 
 From just two OVA files:
-*test machine.ova (Ubuntu)*
-*test machine.ova (Windows)*
+`test machine.ova (Ubuntu)` & `test machine.ova (Windows)`
 
 This is where everything went wrong...
 
