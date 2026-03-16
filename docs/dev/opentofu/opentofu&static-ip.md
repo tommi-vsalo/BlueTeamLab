@@ -38,6 +38,7 @@ enp0s8 → 10.10.10.10/24
 hostname → ansible-con
 
 
+
 ### testikone-logging
 Contains:
 enp0s8 → 10.10.10.40/24
@@ -50,6 +51,9 @@ hostname → log01
 OpenTofu no longer has to fight with netplan because:
 
 Ansible → IP inside OVA
+
 Logging → IP inside OVA
+
 Windows Server → baked
+
 Windows Client → provisioning
