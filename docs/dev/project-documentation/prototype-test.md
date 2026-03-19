@@ -26,7 +26,7 @@ Upon inspection in VirtualBox, all the VMs seem to be configured according to sp
 
 <img width="1194" height="423" alt="image" src="https://github.com/user-attachments/assets/c116301f-0f83-4bd7-aa3d-2f12dacf85a5" />
 
-The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. This was fixed by pressing F12 to begin the boot sequence.
+The Windows image worked immediately upon booting, while the Ubuntu image initially showed a black screen. While it eventually began to work, there were many issues with it including graphical and performance glitches.
 
 Many quality of life features should be baked into the images, like Finnish keyboard, bidirectional clipboard, guest additions etc. if possible. This reduces the amount of work the end user has to do.
 
@@ -35,23 +35,39 @@ Many quality of life features should be baked into the images, like Finnish keyb
 The following list contains questions that should be answered for the prototype stage:
 
 - Where should the `.OVA` -images be stored so that the user can download them easily?
-- What should the images exactly contain (Static IP, WinRM etc.) --> this will be answered during Ansible testing.
+- What should the images exactly contain (Static IP, WinRM etc.) --> Ansible testing.
 - What kind of documentation does the user need to provision the machines on their host (Windows, Linux)?
 - Are there any manual setting up stages that can be removed prior to release?
 
 ## Ansible Setup
 
-The images currently lack the necessary additions to have Ansible work right away, so I manually set these in place.
+I started the Ansible testing by provisioning the new iteration of VMs. The initial `main.tf` -file lacked the new image designations, but this was quickly fixed. Upon provisioning the Windows Client was still on the same image as the Server, which should be changed in the next iteration (desktop, not server). The ubuntu servers also need alternate images for static IP etc.
 
-I started by setting up static IPs on the `Ansible-Controller` and `Windows-Server` according to the documentation.
+The Ubuntu server would initially boot to a black screen again. This was solved by pressing `esc` during bootup and altering the bootup with `nosplash`. This had to be made permanent after booting by editing `/etc/default/grub` with the same configuration and updating it with `sudo update-grub`
 
-<img width="333" height="74" alt="image" src="https://github.com/user-attachments/assets/db0addc8-0cfe-4592-a6d6-decf3e5ce39a" />
+In addition, the NAT on all images was initially not working. I suspect it is an DHCP issue as Windows Troubleshooter quickly solved it while the Ubuntu servers required the addition of `enp0s3: dhcp4: true` in netplan (+ update netplan!). The Windows Server might have the internal IP on the NAT, which I added to the correct intnet and allowed traffic through the firewall with:
 
-<img width="829" height="696" alt="image" src="https://github.com/user-attachments/assets/5fbcea6b-ef6b-48ed-9622-538d508aeebc" />
+`New-NetIPAddress -InterfaceAlias "Ethernet 2" -IPAddress 10.10.10.20 -PrefixLength 24`
 
-Next I allowed traffic on the firewall and as a result, the pings went through.
+`Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In`
 
-<img width="486" height="167" alt="image" src="https://github.com/user-attachments/assets/a72d290c-a42d-43c3-a2e1-520941da0be9" />
+After this, pinging the machines worked in both directions.
+
+The Ubuntu server already had Finnish keyboard but also Finnish OS default, which should be English in the final build. Guest Additions didn't seem to work, but this might be impossible to do via OVA. I preferred to set IP forwarding in the NAT of the Ubuntu Server to control it via host powershell.
+
+https://medium.com/cyber-collective/virtualbox-ssh-connection-using-nat-port-forwarding-0a71474b02d9
+
+WinRM was still out of action for Ansible, so I needed to allow for basic and unencrypted access:
+
+`PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true`
+
+`PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true`
+
+`PS C:\Users\Administrator> winrm get winrm/config/service`
+
+
+
+
 
 
 
