@@ -83,7 +83,27 @@ ansible_user=Administrator
 ansible_password=L48r4#123
 ```
 
+### OVA Improvements
+Windows Image
+- Separate images for both client and server (different OS)
+- Hostname works, add one to the client as well
+- IP needs recofiguring with static IP on intnet instead of NAT
+- Client needs its own static IP as well
+- Server needs to enable traffic within the firewall, code above
+- WinRM isn't fully functional in Server, code above
 
+Ubuntu Image
+- Hostname and static IP work, DHCP needs to be enabled in netplan for NAT
+- SSH into the server probably doesn't need to be preconfigured
+- The black screen bootup problem should be presolved, even if it might be machine dependant(?), code above
+- 
+
+General
+- Usernames and passwords should be simple and standardized
+- Finnish keyboard but English OS
+- Images should be as close to baseline installation as possible, troubleshooting them could be a real issue
+- Username and password upon provisioning?
+- Guest Additions are a bit of a mystery to me
 
 
 
