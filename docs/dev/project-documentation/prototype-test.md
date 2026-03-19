@@ -41,11 +41,11 @@ The following list contains questions that should be answered for the prototype 
 
 ## Ansible Setup
 
-I started the Ansible testing by provisioning the new iteration of VMs. The initial `main.tf` -file lacked the new image designations, but this was quickly fixed. Upon provisioning the Windows Client was still on the same image as the Server, which should be changed in the next iteration (desktop, not server). The ubuntu servers also need alternate images for static IP etc.
+I started the Ansible testing by provisioning the new iteration of VMs. The initial `main.tf` -file lacked the new image designations, but this was quickly fixed. OpenTofu asks for the username and password upon provisioning (and removing!) which could be improved. Upon provisioning the Windows Client was still on the same image as the Server, which should be changed in the next iteration (desktop, not server). This also allows for its own static IP and hostname.
 
 The Ubuntu server would initially boot to a black screen again. This was solved by pressing `esc` during bootup and altering the bootup with `nosplash`. This had to be made permanent after booting by editing `/etc/default/grub` with the same configuration and updating it with `sudo update-grub`
 
-In addition, the NAT on all images was initially not working. I suspect it is an DHCP issue as Windows Troubleshooter quickly solved it while the Ubuntu servers required the addition of `enp0s3: dhcp4: true` in netplan (+ update netplan!). The Windows Server might have the internal IP on the NAT, which I added to the correct intnet and allowed traffic through the firewall with:
+In addition, the NAT on all images was initially not working. I believe the Windows machines have the internal network IP configured to the NAT, which should be automatically acquired through DHCP. Ubuntu servers required the addition of `enp0s3: dhcp4: true` in netplan + `sudo netplan apply`. In Windows I added the correct intnet and allowed traffic through the firewall with:
 
 `New-NetIPAddress -InterfaceAlias "Ethernet 2" -IPAddress 10.10.10.20 -PrefixLength 24`
 
@@ -53,17 +53,35 @@ In addition, the NAT on all images was initially not working. I suspect it is an
 
 After this, pinging the machines worked in both directions.
 
-The Ubuntu server already had Finnish keyboard but also Finnish OS default, which should be English in the final build. Guest Additions didn't seem to work, but this might be impossible to do via OVA. I preferred to set IP forwarding in the NAT of the Ubuntu Server to control it via host powershell.
+The Ubuntu server already had Finnish keyboard but also Finnish OS default, which should be English in the final build. Guest Additions didn't seem to work, but this might be impossible to do via OVA. I preferred to set IP forwarding in the NAT of the Ubuntu Server to control it via host powershell. The following article entails how:
 
 https://medium.com/cyber-collective/virtualbox-ssh-connection-using-nat-port-forwarding-0a71474b02d9
 
-WinRM was still out of action for Ansible, so I needed to allow for basic and unencrypted access:
+WinRM was still out of action for my initial Ansible attempts, so I needed to allow for basic and unencrypted access on the Windows Server:
 
 `PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true`
 
 `PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true`
 
 `PS C:\Users\Administrator> winrm get winrm/config/service`
+
+I tested Ansible out with the following `hosts.ini`
+
+```
+[linux]
+ansible-con ansible_connection=local
+
+[windows]
+dc01 ansible_host=10.10.10.20
+
+[windows:vars]
+ansible_connection=winrm
+ansible_port=5985
+ansible_winrm_transport=basic
+ansible_winrm_server_cert_validation=ignore
+ansible_user=Administrator
+ansible_password=L48r4#123
+```
 
 
 
