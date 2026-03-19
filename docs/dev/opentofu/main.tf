@@ -21,7 +21,8 @@ terraform {
 provider "null" {}
 
 locals {
-  ubuntu_ova  = replace(abspath("${path.module}/images/testikone.ova"), "\\", "/")
+  ubuntu_ova1  = replace(abspath("${path.module}/images/testikone-ansible.ova"), "\\", "/")
+  ubuntu_ova2  = replace(abspath("${path.module}/images/testikone-logging.ova"), "\\", "/")
   windows_ova = replace(abspath("${path.module}/images/konetesti.ova"), "\\", "/")
 }
 
@@ -48,7 +49,7 @@ locals {
 resource "null_resource" "ansible" {
   triggers = {
     name = "Ansible-Controller"
-    ova  = local.ubuntu_ova
+    ova  = local.ubuntu_ova1
   }
 
   # Import
@@ -57,7 +58,7 @@ resource "null_resource" "ansible" {
     command     = local.import_ps
     environment = {
       NAME = "Ansible-Controller"
-      OVA  = local.ubuntu_ova
+      OVA  = local.ubuntu_ova1
     }
   }
 
@@ -142,7 +143,7 @@ echo "${var.ubuntu_password}" | sudo -S sh -lc 'mv /tmp/50-lab-int.yaml /etc/net
 resource "null_resource" "logging" {
   triggers = {
     name = "Logging-Server"
-    ova  = local.ubuntu_ova
+    ova  = local.ubuntu_ova2
   }
 
   # Import
@@ -151,7 +152,7 @@ resource "null_resource" "logging" {
     command     = local.import_ps
     environment = {
       NAME = "Logging-Server"
-      OVA  = local.ubuntu_ova
+      OVA  = local.ubuntu_ova2
     }
   }
 
