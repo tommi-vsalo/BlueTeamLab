@@ -123,8 +123,20 @@ The playbook passed the first two tasks but the DSRM password wasn't strong enou
 
 <img width="436" height="33" alt="image" src="https://github.com/user-attachments/assets/7387ed3b-19f1-44d6-8e93-77674a82892a" />
 
-### Ansible Improvements
+Upon the second try the configuration ran all the way to the end to "wait for reboot". This should be shorter to sooner determine if it ran succesfully, if possible. The Windows VM did reboot and upon further inspection the correct configurations seem to have been applied. I ran some commands to prove this was the case.
 
+<img width="1571" height="1132" alt="image" src="https://github.com/user-attachments/assets/9718269e-4b54-4262-a26b-5955d18b6aa0" />
+
+Everything else was right, but the DNS had strangely changed since I checked it in the previous stage. This could likely be solved by setting the DNS at the end of this playbook instead.
+
+<img width="398" height="453" alt="image" src="https://github.com/user-attachments/assets/33096353-67f7-4dbc-8c7e-3c7da5b5f1f7" />
+
+### Ansible Improvements
+- Some outdated components (sudo in windows, become)
+- Weak DSRM password
+- Long wait for results
+- DNS issue
+- Microsoft.Ad collection could help over ansible_windows
 
 
 
