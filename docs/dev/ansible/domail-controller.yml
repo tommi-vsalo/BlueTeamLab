@@ -1,0 +1,55 @@
+- name: Domain Controller Setup
+  hosts: dc01
+  gather_facts: false
+  become: true
+  become_method: runas
+  become_user: pihla
+
+  vars:
+    domain_name: blueteamlab.local
+    domain_netbios: BLUETEAMLAB
+    dc_dns_ip: "10.10.10.20"
+    safe_mode_password: "l48r4"
+
+  tasks:
+    - name: Set DNS client to the DC
+      ansible.windows.win_dns_client:
+        adapter_names:
+          - "Ethernet 2"
+        ipv4_addresses:
+          - "{{ dc_dns_ip }}"
+
+    - name: Install Active Directory Domain Services
+      ansible.windows.win_feature:
+        name:
+          - AD-Domain-Services
+          - RSAT-AD-Tools
+          - RSAT-DNS-Server
+        state: present
+        include_management_tools: true
+      register: ad_ds_install
+
+    - name: Reboot if feature installation requires it
+      ansible.windows.win_reboot:
+        msg: "Rebooting after AD DS installation"
+        reboot_timeout: 3600
+      when: ad_ds_install.reboot_required | default(false)
+
+    - name: Promote server and create forest
+      ansible.windows.win_domain:
+        dns_domain_name: "{{ domain_name }}"
+        domain_netbios_name: "{{ domain_netbios }}"
+        safe_mode_password: "{{ safe_mode_password }}"
+      register: promotion
+
+    - name: Reboot after promotion
+      ansible.windows.win_reboot:
+        msg: "Rebooting"
+        reboot_timeout: 3600
+      when: promotion.reboot_required | default(true)
+
+    - name: Wait for reboot
+      ansible.windows.win_wait_for:
+        port: 5985
+        delay: 10
+        timeout: 600
