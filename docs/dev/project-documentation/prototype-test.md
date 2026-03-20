@@ -105,6 +105,28 @@ General
 - Username and password upon provisioning?
 - Guest Additions are a bit of a mystery to me
 
+## Ansible Testing
+
+Next, I tested out the `ansible.cfg` and `domain_controller_promotion.yml` -files. The first one is a global configuration file while the second is the first playbook of the project.
+
+The configuration file causes an issue as it tries to force windows to use `sudo`. This was fixed by temporarily commenting out the priviledge escalation portion of the configuration file. 
+
+Next I ran a very simple playbook to ensure this Ansible function worked in practice. I also ran the playbook with `--syntax-check` to catch issues. I disabled the `become` portion of the code since it didn't look quite right for the current Windows Server. 
+
+<img width="803" height="413" alt="image" src="https://github.com/user-attachments/assets/c8dec7d8-4571-42d1-86f1-4b1ff3c0514e" />
+
+With these steps in mind I ran the full playbook.
+
+<img width="1721" height="549" alt="image" src="https://github.com/user-attachments/assets/21098af3-76be-47f3-8c42-a612f59787fc" />
+
+The playbook passed the first two tasks but the DSRM password wasn't strong enough. I configured a safer password and tried again. At this stage I could see that the DNS was set properly and AD was downloading.
+
+<img width="436" height="33" alt="image" src="https://github.com/user-attachments/assets/7387ed3b-19f1-44d6-8e93-77674a82892a" />
+
+### Ansible Improvements
+
+
+
 
 
 
