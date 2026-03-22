@@ -23,7 +23,8 @@ provider "null" {}
 locals {
   ubuntu_ova1  = replace(abspath("${path.module}/images/testikone-ansible.ova"), "\\", "/")
   ubuntu_ova2  = replace(abspath("${path.module}/images/testikone-logging.ova"), "\\", "/")
-  windows_ova = replace(abspath("${path.module}/images/konetesti.ova"), "\\", "/")
+  windows_ova1 = replace(abspath("${path.module}/images/konetesti-server.ova"), "\\", "/")
+  windows_ova2 = replace(abspath("${path.module}/images/konetesti-client.ova"), "\\", "/")
 }
 
 
@@ -238,7 +239,7 @@ echo "${var.ubuntu_password}" | sudo -S sh -lc 'rm -f /etc/netplan/*.yaml && ins
 resource "null_resource" "winserver" {
   triggers = {
     name = "Windows-Server"
-    ova  = local.windows_ova
+    ova  = local.windows_ova1
   }
 
 
@@ -247,7 +248,7 @@ resource "null_resource" "winserver" {
     command     = local.import_ps
     environment = {
       NAME = "Windows-Server"
-      OVA  = local.windows_ova
+      OVA  = local.windows_ova1
     }
   }
 
@@ -319,7 +320,7 @@ Set-NetConnectionProfile -InterfaceIndex $lab.ifIndex -NetworkCategory Private
 resource "null_resource" "winclient" {
   triggers = {
     name = "Windows-Client"
-    ova  = local.windows_ova
+    ova  = local.windows_ova2
   }
 
   # Import
@@ -328,7 +329,7 @@ resource "null_resource" "winclient" {
     command     = local.import_ps
     environment = {
       NAME = "Windows-Client"
-      OVA  = local.windows_ova
+      OVA  = local.windows_ova2
     }
   }
 
