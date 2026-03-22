@@ -1,4 +1,7 @@
-ubuntu_user      = "pihla"
-ubuntu_password  = "8lu3"
-windows_user     = "Administrator"
-windows_password = "L48r4#123"
+ubuntu_user      = "student"
+
+ubuntu_password  = "blue"
+
+windows_user     = "student"
+
+windows_password = "Team123!"
