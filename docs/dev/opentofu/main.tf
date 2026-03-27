@@ -24,7 +24,7 @@ locals {
   ubuntu_ova1  = replace(abspath("${path.module}/images/testikone-ansible.ova"), "\\", "/")
   ubuntu_ova2  = replace(abspath("${path.module}/images/testikone-logging.ova"), "\\", "/")
   windows_ova1 = replace(abspath("${path.module}/images/konetesti-server.ova"), "\\", "/")
-  windows_ova2 = replace(abspath("${path.module}/images/konetesti-client.ova"), "\\", "/")
+  windows_ova2 = replace(abspath("${path.module}/images/konetesti-client1.ova"), "\\", "/")
 }
 
 
