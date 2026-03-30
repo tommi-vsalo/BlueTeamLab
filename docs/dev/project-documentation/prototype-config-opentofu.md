@@ -30,7 +30,9 @@ It handles:
 ### Base Images
 
 - Ubuntu base OVAs: **testikone-ansible.ova** & **testikone-logging.ova**
+  - Each Ubuntu OVA contains its own baked-in hostname, static IP, netplan config, keyboard+locale, Guest Additions, and NIC layout.
 - Windows base OVAs: **konetesti-server.ova** & **konetesti-client.ova**
+  - Each Ubuntu OVA contains its own baked-in hostname, static IP, NAT DHCP, FI keyboard + EN OS and Guest Additions.
 
 
 The original plan was to reuse only two OVA images:
