@@ -68,40 +68,41 @@ This removes the VM cleanly from VirtualBox.
 
 
 ## Base Images (OVA files)
-The project uses two OVA base images:
+The project uses four OVA base images:
 
-### Ubuntu OVA — testikone.ova
-Used for:
-- Ansible Controller
-- Logging Server
+### Ubuntu OVAs
+**testikone-ansible.ova**
+**testikone-logging.ova**
 
-Contains:
+These contain:
+- Hostname baked in
+- Static IP in netplan
 - Guest Additions
-- SSH enabled
-- Python3
-- `apt update & upgrade`
-- Finnish keyboard
-- Basic bootstrap steps
+- FI keyboard, EN OS
+- Student account
+- NAT + lab-int NICs
 
 
-### Windows OVA — konetesti.ova
-Used for:
-- Windows Server (dc01)
-- Windows Client (cl01)
+### Windows OVAs
+**konetesti-server.ova**
+**konetesti-client.ova (Windows 10 Pro, not Home)**
 
-Contains:
+These contain:
+- Hostname baked in
+- Static IP
+- FI keyboard + EN OS
 - Guest Additions
-- WinRM enabled
-- Port 5985 allowed
-- Basic bootstrap steps
+- WinRM + firewall (server only)
+- Local admin: student / Student!2026
 
 **OVA files** are stored in OneDrive:
 OpenTofu / OVA-images/
 
 Before running OpenTofu, place them locally:
-images/testikone.ova
-images/konetesti.ova
-
+images/testikone-ansible.ova
+images/testikone-logging.ova
+images/konetesti-server.ova
+images/konetesti-client.ova
 
 
 
@@ -124,7 +125,7 @@ OpenTofu will:
 
 
 
-## 7. What OpenTofu does NOT configure
+## What OpenTofu does NOT configure
 These will be handled later via Ansible:
 - Static IP addresses
 - Domain join
