@@ -29,8 +29,17 @@ It handles:
 
 ### Base Images
 
-- Ubuntu base OVA: **testikone.ova**  
-- Windows base OVA: **konetesti.ova**
+- Ubuntu base OVAs: **testikone-ansible.ova** & **testikone-logging.ova**
+- Windows base OVAs: **konetesti-server.ova** & **konetesti-client.ova**
+
+
+The original plan was to reuse only two OVA images:
+- One Ubuntu OVA for both Ansible + Logging
+- One Windows OVA for both Server + Client
+
+This approach turned out to be flawed, and it caused multiple issues throughout the build process.
+
+
 
 ### Network Design
 
