@@ -6,10 +6,17 @@ The goal was to automatically set up:
 - Windows Server (dc01)
 - Windows Client (cl01)
 
-From just two OVA files:
-`test machine.ova (Ubuntu)` & `test machine.ova (Windows)`
+From four OVA files:
+`testikone-ansible.ova (Ubuntu)`, `testikone-logging.ova (Ubuntu)`, `konetesti-server.ova (Windows)` & `konetesti-client.ova (Windows)`
 
-This is where everything went wrong...
+
+The original plan was to use only two images:
+
+`testikone.ova (Ubuntu)`
+
+`konetesti.ova (Windows)`
+
+But this is where a series of problems began.
 
 
 ## 2. Baking static IP addresses for .OVA files.
@@ -46,13 +53,31 @@ hostname → log01
 
 
 
+Now each has:
+- Own hostname
+- Own IP
+- Completely identical base but a netplan baked for a different role
+
+
+
+## 4. Windows?
+
+Windows doesn't use netplan, so there were no IP conflicts but we also made separate OVAs for the sake of neatness:
+
+`konestesti-server.ova`
+
+`konestesti-client.ova`
+
+
+Another important note:
+Windows 10 Home cannot be joined to a domain
+→ We fixed it by installing Windows 10 Pro on the client.
+
+
+
 ## 5. The end result
-OpenTofu no longer has to fight with netplan because:
-
-Ansible → IP inside OVA
-
-Logging → IP inside OVA
-
-Windows Server → baked
-
-Windows Client → provisioning
+OpenTofu no longer has to deal with:
+- IP ​​detection
+- NIC mapping
+- Guestcontrol scripts
+- Netplan files
