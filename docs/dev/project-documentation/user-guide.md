@@ -29,6 +29,7 @@ The lab contains 4 machines, each with its own role.
 
 ### Step 1
 Create a folder for the lab. The image shows the folder structure.
+
 <img width="517" height="451" alt="image" src="https://github.com/user-attachments/assets/26d6f397-3926-472a-a4bc-514a68e66ab5" />
 
 ### Step 2
