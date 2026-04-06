@@ -9,6 +9,7 @@ This lab a training environment where students can explore and test:
 - Small practice attacks and defenses.
 - A general Windows/Ubuntu server environment.
 - Infrastructure-as-Code using OpenTofu.
+- How virtual machines are deployed automatically using VirtualBox + OVA images
 
 All machines run in VirtualBox and are automatically created with the OpenTofu tool.
 
