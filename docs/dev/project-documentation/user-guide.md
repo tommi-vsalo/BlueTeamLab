@@ -74,3 +74,48 @@ Opentofu will do the following:
 - Add NAT + lab-int network adapters.
 - Assign VM names.
 - Ensure reproducible infrastructure.
+
+
+## Login Credentials
+
+### Ansible & Logging (= Ubuntu virtual machines)
+User: student
+Password: team
+
+
+### Server & Client (= Windows virtual machines)
+User: student
+Password: Team123!
+
+
+## How to end the lab?
+
+To end the lab, enter the command
+```
+tofu destroy
+```
+
+This unregisters and deletes all VirtualBox machines.
+
+
+## Troubleshooting
+
+### Virtual Machine doesn't import?
+Check that images exist:
+
+<img width="382" height="586" alt="image" src="https://github.com/user-attachments/assets/bdc1b5e9-a2c2-4acf-8867-b8b8f7949069" />
+
+
+### Clients can't find domain?
+DNS must point to dc01 = 10.10.10.10
+
+If necessary, run:
+```
+ipconfig /flushdns
+```
+
+
+### Networking broken after import
+1. Restart VirtualBox
+2. Ensure lab-int exists
+3. Verify NIC order (NAT first, Internal second)
