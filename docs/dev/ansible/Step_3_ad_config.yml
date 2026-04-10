@@ -1,0 +1,98 @@
+- name: AD Configuration
+  hosts: dc01
+  gather_facts: false
+  become: true
+  become_method: runas
+  become_user: student
+
+  vars:
+    domain_name: blueteamlab.local
+    domain_dn: "DC=blueteamlab,DC=local"
+
+    domain_admin_user: "BLUETEAMLAB\\student"
+    domain_admin_password: "Team123!"
+
+    ous:
+      - { name: "Servers",         path: "{{ domain_dn }}" }
+      - { name: "Clients",         path: "{{ domain_dn }}" }
+      - { name: "Users",           path: "{{ domain_dn }}" }
+      - { name: "ServiceAccounts", path: "{{ domain_dn }}" }
+
+    user_ou_dn: "OU=Users,{{ domain_dn }}"
+    svc_ou_dn: "OU=ServiceAccounts,{{ domain_dn }}"
+
+    new_user:
+      name: "blueuser"
+      firstname: "Blue"
+      surname: "User"
+      display_name: "Blue User"
+      upn: "blueuser@blueteamlab.local"
+      password: "Team123!"
+      groups_add:
+        - "Domain Users"
+
+    service_account:
+      name: "svc-http"
+      display_name: "HTTP Service Account"
+      upn: "svc-http@blueteamlab.local"
+      password: "Team123!"
+      spns_add:
+        - "HTTP/log01.blueteamlab.local"
+        - "HTTP/log01"
+
+  tasks:
+    - name: Create OUs
+      microsoft.ad.ou:
+        name: "{{ item.name }}"
+        path: "{{ item.path }}"
+        state: present
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+      loop: "{{ ous }}"
+
+    - name: Create new user
+      microsoft.ad.user:
+        name: "{{ new_user.name }}"
+        firstname: "{{ new_user.firstname }}"
+        surname: "{{ new_user.surname }}"
+        display_name: "{{ new_user.display_name }}"
+        upn: "{{ new_user.upn }}"
+        password: "{{ new_user.password }}"
+        path: "{{ user_ou_dn }}"
+        enabled: true
+        state: present
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+        groups:
+          add: "{{ new_user.groups_add }}"
+      no_log: true
+
+    - name: Create service account
+      microsoft.ad.user:
+        name: "{{ service_account.name }}"
+        display_name: "{{ service_account.display_name }}"
+        upn: "{{ service_account.upn }}"
+        password: "{{ service_account.password }}"
+        path: "{{ svc_ou_dn }}"
+        enabled: true
+        state: present
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+        spn:
+          add: "{{ service_account.spns_add }}"
+      no_log: true
+
+    - name: Enable audit policy - Logon
+      ansible.windows.win_shell: |
+        auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+      changed_when: false
+
+    - name: Enable audit policy - Kerberos Service Ticket Operations
+      ansible.windows.win_shell: |
+        auditpol /set /subcategory:"Kerberos Service Ticket Operations" /success:enable /failure:enable
+      changed_when: false
+
+    - name: Enable audit policy - Directory Service Access
+      ansible.windows.win_shell: |
+        auditpol /set /subcategory:"Directory Service Access" /success:enable /failure:enable
+      changed_when: false
