@@ -1,4 +1,4 @@
-- name: AD Configuration
+- name: AD Configuration on Domain Controller
   hosts: dc01
   gather_facts: false
   become: true
@@ -6,20 +6,20 @@
   become_user: student
 
   vars:
-    domain_name: blueteamlab.local
-    domain_dn: "DC=blueteamlab,DC=local"
+    domain_name: "blueteamlab.local"
+    domain: "DC=blueteamlab,DC=local"
 
     domain_admin_user: "BLUETEAMLAB\\student"
     domain_admin_password: "Team123!"
 
     ous:
-      - { name: "Servers",         path: "{{ domain_dn }}" }
-      - { name: "Clients",         path: "{{ domain_dn }}" }
-      - { name: "Users",           path: "{{ domain_dn }}" }
-      - { name: "ServiceAccounts", path: "{{ domain_dn }}" }
+      - { name: "Servers",         path: "{{ domain }}" }
+      - { name: "Clients",         path: "{{ domain }}" }
+      - { name: "LabUsers",        path: "{{ domain }}" }
+      - { name: "ServiceAccounts", path: "{{ domain }}" }
 
-    user_ou_dn: "OU=Users,{{ domain_dn }}"
-    svc_ou_dn: "OU=ServiceAccounts,{{ domain_dn }}"
+    user_ou: "OU=LabUsers,{{ domain }}"
+    svc_ou: "OU=ServiceAccounts,{{ domain }}"
 
     new_user:
       name: "blueuser"
@@ -41,7 +41,7 @@
         - "HTTP/log01"
 
   tasks:
-    - name: Create OUs
+    - name: Ensure OUs exist
       microsoft.ad.ou:
         name: "{{ item.name }}"
         path: "{{ item.path }}"
@@ -58,14 +58,13 @@
         display_name: "{{ new_user.display_name }}"
         upn: "{{ new_user.upn }}"
         password: "{{ new_user.password }}"
-        path: "{{ user_ou_dn }}"
+        path: "{{ user_ou }}"
         enabled: true
         state: present
         domain_username: "{{ domain_admin_user }}"
         domain_password: "{{ domain_admin_password }}"
         groups:
           add: "{{ new_user.groups_add }}"
-      no_log: true
 
     - name: Create service account
       microsoft.ad.user:
@@ -73,16 +72,15 @@
         display_name: "{{ service_account.display_name }}"
         upn: "{{ service_account.upn }}"
         password: "{{ service_account.password }}"
-        path: "{{ svc_ou_dn }}"
+        path: "{{ svc_ou }}"
         enabled: true
         state: present
         domain_username: "{{ domain_admin_user }}"
         domain_password: "{{ domain_admin_password }}"
         spn:
           add: "{{ service_account.spns_add }}"
-      no_log: true
 
-    - name: Enable audit policy - Logon
+    - name: Enable audit policies - Logon
       ansible.windows.win_shell: |
         auditpol /set /subcategory:"Logon" /success:enable /failure:enable
       changed_when: false
