@@ -98,6 +98,33 @@ tofu destroy
 This unregisters and deletes all VirtualBox machines.
 
 
+## Quick Test Checklist
+
+### Infrastructure
+- [ ] OpenTofu executes `tofu apply` without errors
+- [ ] All four virtual machines are visible in VirtualBox
+- [ ] Network card order is correct (NIC1 = NAT, NIC2 = lab-int)
+
+### Basic virtual machine checks
+- [ ] dc01 starts successfully
+- [ ] cl01 starts successfully
+- [ ] ansible-con starts successfully
+- [ ] log01 starts successfully
+
+### Network
+- [ ] dc01 responds to ping command from cl01
+- [ ] cl01 resolves dc01 via DNS
+- [ ] lab-int network is reachable between machines
+
+### Login credentials
+- [ ] User `student` can log in to all machines
+
+### Optional (when AD is configured)
+- [ ] cl01 can join the domain
+- [ ] Basic AD tools are open on dc01
+
+
+
 ## Troubleshooting
 
 ### Virtual Machine doesn't import?
@@ -119,3 +146,8 @@ ipconfig /flushdns
 1. Restart VirtualBox
 2. Ensure lab-int exists
 3. Verify NIC order (NAT first, Internal second)
+
+
+## Note
+This lab is provided for **educational use only**.
+The user guide is iteratively improved during the prototype phase.
