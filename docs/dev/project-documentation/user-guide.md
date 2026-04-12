@@ -11,7 +11,7 @@ This lab a training environment where students can explore and test:
 - Infrastructure-as-Code using OpenTofu.
 - How virtual machines are deployed automatically using VirtualBox + OVA images
 
-All machines run in VirtualBox and are automatically created with the OpenTofu tool.
+All machines run in **VirtualBox** and are automatically created with the **OpenTofu** tool.
 
 
 ## Virtual Machines
@@ -37,7 +37,9 @@ Install the following tools:
 - **PowerShell** (Windows host recommended)
 
 
-## How to start the lab?
+## Before you start the lab
+Install the following tools to your computer:
+- Virtualbox
 
 ### Step 1
 Create a folder for the lab. The image shows the folder structure.
