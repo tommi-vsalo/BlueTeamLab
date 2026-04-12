@@ -36,29 +36,26 @@ Install the following tools:
 - **OpenTofu** (Terraform-compatible IaC tool)
 - **PowerShell** (Windows host recommended)
 
-
-## Before you start the lab
-Install the following tools to your computer:
-- Virtualbox
-
-### Step 1
-Create a folder for the lab. The image shows the folder structure.
+Create a project folder and make sure it looks like this:
 
 <img width="517" height="451" alt="image" src="https://github.com/user-attachments/assets/26d6f397-3926-472a-a4bc-514a68e66ab5" />
 
-### Step 2
+
+## How to start the lab?
+
+### Step 1 (OVA images are not yet in public distribution!!!)
 Upload the OVA images and save them in the images folder.
 
-### Step 3
+### Step 2
 Open Powershell as admin.
 
-### Step 4
+### Step 3
 Navigate to the lab folder.
 ```
 cd lab
 ```
 
-### Step 5
+### Step 4
 Initialize OpenTofu.
 ```
 tofu init
