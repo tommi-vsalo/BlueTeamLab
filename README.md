@@ -4,7 +4,7 @@
 
 This project is intended for **educational and testing purposes only**.
 
-###Windows Server
+### Windows Server
 Windows Server is deployed using the official **Microsoft Windows Server 2022 Evaluation** edition.
 The virtual machine is intended for educational and testing purposes only and is not used in production.
 The evaluation license is for a limited time.
