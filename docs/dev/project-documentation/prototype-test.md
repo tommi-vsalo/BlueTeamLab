@@ -164,6 +164,14 @@ This test covers the next generation of OVA's in preparation for public use foll
 
 <img width="639" height="486" alt="image" src="https://github.com/user-attachments/assets/b82acb8c-d634-404d-a634-3f248ac9c91a" />
 
+- The only issue with the first playbook seems to be fine except for the weak password
+- Windows Client also needs to enable PSRemoting and winrm
+
+<img width="1132" height="329" alt="image" src="https://github.com/user-attachments/assets/1c1c73ae-3366-46d7-ad9d-cc29af549228" />
+
+- The second playbook had initial issues, but this is where my time ran out for the day
+
+
 
 
 
