@@ -1,6 +1,6 @@
 ubuntu_user      = "student"
 
-ubuntu_password  = "blue"
+ubuntu_password  = "team"
 
 windows_user     = "student"
 
