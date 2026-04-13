@@ -168,6 +168,17 @@ ipconfig /flushdns
 3. Verify NIC order (NAT first, Internal second)
 
 
+### Ubuntu displays a black screen on first boot
+
+On some systems, Ubuntu virtual machines may initially display a black screen.
+
+- This may resolve itself after a short wait
+- Guest Additions are already stored in the disk images
+- Once the system has booted, normal operation is expected
+
+This does not indicate a failed installation.
+
+
 ## Note
 This lab is provided for **educational use only**.
 The user guide is iteratively improved during the prototype phase.
