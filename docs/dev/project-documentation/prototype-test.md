@@ -146,12 +146,26 @@ This test covers the next generation of OVA's in preparation for public use foll
 - The password in the user guide for ubuntu servers doesn't match the secrets file.
 - User guide still lacks the Ansible portion & port forwarding for SSH access
 - SSH allows for direct copy of files onto the Ansible Controller:
+  
 <img width="477" height="105" alt="image" src="https://github.com/user-attachments/assets/31dd0b87-8a21-4cbd-9fd3-d8ae97bf1385" />
 <img width="633" height="195" alt="image" src="https://github.com/user-attachments/assets/c63b934d-3a30-4e5f-982c-d2bf9e7f4800" />
 <img width="810" height="55" alt="image" src="https://github.com/user-attachments/assets/1c3056fb-6d7e-45ec-b048-648056acf946" />
 
 
-- 
+- Port forwarding --> open SSH connection --> scp files to Ansible controller --> chmod +x bootstrap ansible --> run ansible bootstrap
+- Windows firewall blocks pings, otherwise connectivity is good from the getgo
+- Windows also lacks Finnish keyboard
+- Ansible file structure example needed:
+
+<img width="409" height="90" alt="image" src="https://github.com/user-attachments/assets/1b7a3191-8644-45cd-8b61-787b2f148eb4" />
+
+- ansible.cfg still uses sudo on windows, I commented out the priviledge escalation lines
+- winrm configuration issues persist and hosts.ini is outdated to current configurations
+
+<img width="639" height="486" alt="image" src="https://github.com/user-attachments/assets/b82acb8c-d634-404d-a634-3f248ac9c91a" />
+
+
+
 
 
 
