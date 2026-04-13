@@ -2,7 +2,7 @@
 
 ## What is the purpose of this lab?
 
-This lab a training environment where students can explore and test:
+This lab is a training environment where students can explore and test:
 - Windows Active Directory basics.
 - Interaction between domain machine and workstation.
 - Log collection and reading.
@@ -44,7 +44,7 @@ Create a project folder and make sure it looks like this:
 If OpenTofu fails and gives a `VBoxManage` error, VirtualBox may not be in your system path.
 
 If this happens:
-- Open **System Preferences**
+- Open **System Settings**
 - Go to **Advanced System Settings**
 - Open **Environment Variables**
 - Add the VirtualBox installation directory to your PATH
@@ -172,9 +172,9 @@ ipconfig /flushdns
 
 On some systems, Ubuntu virtual machines may initially display a black screen.
 
-- This may resolve itself after a short wait
-- Guest Additions are already stored in the disk images
-- Once the system has booted, normal operation is expected
+- This may resolve itself after a short wait.
+- Guest Additions are already stored in the disk images. This reduces the amount of manual configuration required from students.
+- Once the system has booted, normal operation is expected.
 
 This does not indicate a failed installation.
 
