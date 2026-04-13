@@ -138,6 +138,23 @@ Everything else was right, but the DNS had strangely changed since I checked it 
 - DNS issue
 - Microsoft.Ad collection could help over ansible_windows
 
+## Version 2.0 Testing
+
+This test covers the next generation of OVA's in preparation for public use following the user guide documentation.
+
+- main.tf and the secrets file might be difficult to find without context, so they should reside in the git user directory with the rest of the project files.
+- The password in the user guide for ubuntu servers doesn't match the secrets file.
+- User guide still lacks the Ansible portion & port forwarding for SSH access
+- SSH allows for direct copy of files onto the Ansible Controller:
+<img width="477" height="105" alt="image" src="https://github.com/user-attachments/assets/31dd0b87-8a21-4cbd-9fd3-d8ae97bf1385" />
+<img width="633" height="195" alt="image" src="https://github.com/user-attachments/assets/c63b934d-3a30-4e5f-982c-d2bf9e7f4800" />
+<img width="810" height="55" alt="image" src="https://github.com/user-attachments/assets/1c3056fb-6d7e-45ec-b048-648056acf946" />
+
+
+- 
+
+
+
 
 
 
