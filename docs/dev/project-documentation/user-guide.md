@@ -40,6 +40,19 @@ Create a project folder and make sure it looks like this:
 
 <img width="517" height="451" alt="image" src="https://github.com/user-attachments/assets/26d6f397-3926-472a-a4bc-514a68e66ab5" />
 
+### Important note for Windows users!
+If OpenTofu fails and gives a `VBoxManage` error, VirtualBox may not be in your system path.
+
+If this happens:
+- Open **System Preferences**
+- Go to **Advanced System Settings**
+- Open **Environment Variables**
+- Add the VirtualBox installation directory to your PATH
+- Restart PowerShell after making the changes
+
+This is a known issue on some Windows systems.
+
+
 
 ## How to start the lab?
 
