@@ -74,11 +74,18 @@ Initialize OpenTofu.
 tofu init
 ```
 
-### Step 6
+### Step 5
 Create all Virtual Machines.
 ```
 tofu apply
 ```
+
+Initial setup may take several minutes depending on your system.
+Please expect approximately:
+- 5-10 minutes of setup time
+- approximately 30 GB of disk space usage
+
+This is normal during first use.
 
 Opentofu will do the following:
 - Import all OVA images.
