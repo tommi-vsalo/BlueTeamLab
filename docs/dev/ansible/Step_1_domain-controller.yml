@@ -3,13 +3,13 @@
   gather_facts: false
   become: true
   become_method: runas
-  become_user: pihla
+  become_user: student
 
   vars:
     domain_name: blueteamlab.local
     domain_netbios: BLUETEAMLAB
     dc_dns_ip: "10.10.10.20"
-    safe_mode_password: "l48r4"
+    safe_mode_password: "Team123!"
 
   tasks:
     - name: Set DNS client to the DC
