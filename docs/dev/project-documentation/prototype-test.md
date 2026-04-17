@@ -171,6 +171,24 @@ This test covers the next generation of OVA's in preparation for public use foll
 
 - The second playbook had initial issues, but this is where my time ran out for the day
 
+To recap, currently the manual tasks to get the environment working are:
+
+secrets file shows "team" as ubuntu password but its still "blue"
+
+Winserver
+- Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-I
+- Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
+- Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true
+
+Ansible Controller
+- Set portforwarding in NAT
+- https://medium.com/cyber-collective/virtualbox-ssh-connection-using-nat-port-forwarding-0a71474b02d9
+- Send the files in the correct ansible structure (ansible --> inventory -> hosts.ini, playbooks -> Step.yml...)
+- scp -P 2222 D:\BlueFiles\* student@127.0.0.1:.
+- chmod +x bootstrap_ansible.sh
+- ./bootstrap_ansible.sh
+- ansible windows -i inventory/hosts.ini -m win_ping
+
 ## OpenTofu Scripting
 
 Preferring scripting to machine image based configuration would be useful in completing the infra-as-code concept of the project. The following lines should be used as a proof of concept in the OpenTofu `cloud.init`. They allow the Windows Server to communicate with the Ansible Controller.
