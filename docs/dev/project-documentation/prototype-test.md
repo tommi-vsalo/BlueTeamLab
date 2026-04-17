@@ -171,8 +171,15 @@ This test covers the next generation of OVA's in preparation for public use foll
 
 - The second playbook had initial issues, but this is where my time ran out for the day
 
+## OpenTofu Scripting
 
+Preferring scripting to machine image based configuration would be useful in completing the infra-as-code concept of the project. The following lines should be used as a proof of concept in the OpenTofu `cloud.init`. They allow the Windows Server to communicate with the Ansible Controller.
 
+`Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In`
+
+`PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true`
+
+`PS C:\Users\Administrator> Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true`
 
 
 
