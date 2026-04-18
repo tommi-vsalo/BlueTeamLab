@@ -7,7 +7,7 @@
 
   vars:
     domain_name: blueteamlab.local
-    dc_dns_ip: "10.10.10.10"
+    dc_dns_ip: "10.10.10.20"
     client_dns_adapter: "Ethernet 2"
     domain_join_user: "BLUETEAMLAB\\student"
     domain_join_password: "Team123!"
