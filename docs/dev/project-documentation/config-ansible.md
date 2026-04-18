@@ -1,6 +1,6 @@
-# Prototype Configurations (Ansible)
+# Ansible Configurations
 
-This document lists the necessary Ansible configurations that have to be implemented for the prototype build. Ansible is used to configure the virtual machines within the lab environment.
+This document lists the necessary configurations that have to be implemented using Ansible. Ansible is used to configure the virtual machines within the lab environment.
 
 
 ### Table of Configurations
@@ -46,21 +46,8 @@ Verify that the Client is a part of the domain
 - Create Organizational Units
 - Create new admin account
 - Disable built-in admin account
-- Create new user account
-- Create service account
-- Configure SPN to service account
-
-- Enable advanced audit policies:
-  -  Logon events
-  -  Kerberos Service Ticket Operations
-  -  Directory Service Access
-  
-- In addition, detection testing would benefit from:
-  - Account Logon
-  - Account Management
-  - Process Creation with command-line logging
-  - Object Access
-  - Policy Change
+- Create new user accounts
+- Add user accounts to groups
  
 ### OU-Outline
 
@@ -73,19 +60,5 @@ Verify that the Client is a part of the domain
     - Standard Users
   - Service Accounts
   - Groups
-
-### Step 4 - Logging Setup
-
-**Logging Server**:
-- Install Graylog and required dependencies (utilize maintained public role OR dockerized)
-- Configure log input from `dc01`
-
-**Windows Server**: 
-- Install Winlogbeat
-- Forward relevant events to `log01` 
-- Restart and enable Winlogbeat service
-
-### Step 5 - Scripted Attack Setup
-
 **Windows Client**:
 - Load scripted attack
