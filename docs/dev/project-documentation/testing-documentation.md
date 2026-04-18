@@ -1,4 +1,4 @@
-# Prototype Testing Documentation
+# Testing Documentation
 This document records the steps taken to test the environment in practice. The tests were done on a Windows host.
 
 ## OpenTofu Setup
