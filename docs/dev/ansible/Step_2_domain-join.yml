@@ -7,7 +7,7 @@
 
   vars:
     domain_name: blueteamlab.local
-    dc_dns_ip: "10.10.10.20"
+    dc_dns_ip: "10.10.10.10"
     client_dns_adapter: "Ethernet 2"
     domain_join_user: "BLUETEAMLAB\\student"
     domain_join_password: "Team123!"
@@ -19,6 +19,13 @@
           - "{{ client_dns_adapter }}"
         ipv4_addresses:
           - "{{ dc_dns_ip }}"
+
+    - name: Flush DNS cache
+      ansible.windows.win_shell: ipconfig /flushdns
+
+    - name: Wait for DNS to propagate
+      ansible.builtin.pause:
+        seconds: 10
 
     - name: Verify DC can be discovered
       ansible.windows.win_shell: |
@@ -37,6 +44,11 @@
         domain_admin_password: "{{ domain_join_password }}"
         state: domain
       register: domain_join
+      ignore_errors: true
+
+    - name: Wait for domain join
+      ansible.builtin.pause:
+        seconds: 30
 
     - name: Reboot after domain join
       ansible.windows.win_reboot:
