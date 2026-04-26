@@ -12,33 +12,88 @@
     domain_admin_user: "BLUETEAMLAB\\student"
     domain_admin_password: "Team123!"
 
-    ous:
-      - { name: "Servers",         path: "{{ domain }}" }
-      - { name: "Clients",         path: "{{ domain }}" }
-      - { name: "LabUsers",        path: "{{ domain }}" }
-      - { name: "ServiceAccounts", path: "{{ domain }}" }
-
-    user_ou: "OU=LabUsers,{{ domain }}"
-    svc_ou: "OU=ServiceAccounts,{{ domain }}"
-
-    new_user:
-      name: "blueuser"
-      firstname: "Blue"
-      surname: "User"
-      display_name: "Blue User"
-      upn: "blueuser@blueteamlab.local"
+    new_admin:
+      name: "labadmin"
+      firstname: "Lab"
+      surname: "Admin"
+      display_name: "Lab Admin"
+      upn: "labadmin@blueteamlab.local"
       password: "Team123!"
-      groups_add:
-        - "Domain Users"
+
+    ous:
+      # Top-level
+      - { name: "BlueteamLab",      path: "{{ domain }}" }
+      # Under BlueteamLab
+      - { name: "Servers",          path: "OU=BlueteamLab,{{ domain }}" }
+      - { name: "Workstations",     path: "OU=BlueteamLab,{{ domain }}" }
+      - { name: "Users",            path: "OU=BlueteamLab,{{ domain }}" }
+      - { name: "Service Accounts", path: "OU=BlueteamLab,{{ domain }}" }
+      - { name: "Groups",           path: "OU=BlueteamLab,{{ domain }}" }
+      # Under Servers
+      - { name: "Domain Controllers", path: "OU=Servers,OU=BlueteamLab,{{ domain }}" }
+      # Under Users
+      - { name: "Admins",          path: "OU=Users,OU=BlueteamLab,{{ domain }}" }
+      - { name: "Standard Users",  path: "OU=Users,OU=BlueteamLab,{{ domain }}" }
+
+    ad_groups:
+      - { name: "IT",      path: "OU=Groups,OU=BlueteamLab,{{ domain }}", scope: "Global", category: "Security" }
+      - { name: "HR",      path: "OU=Groups,OU=BlueteamLab,{{ domain }}", scope: "Global", category: "Security" }
+      - { name: "Finance", path: "OU=Groups,OU=BlueteamLab,{{ domain }}", scope: "Global", category: "Security" }
+
+    standard_users:
+      - name: "jsmith"
+        firstname: "John"
+        surname: "Smith"
+        display_name: "John Smith"
+        upn: "jsmith@blueteamlab.local"
+        password: "Team123!"
+        department: "IT"
+        groups: ["IT", "Domain Users"]
+
+      - name: "ajohansson"
+        firstname: "Anna"
+        surname: "Johansson"
+        display_name: "Anna Johansson"
+        upn: "ajohansson@blueteamlab.local"
+        password: "Team123!"
+        department: "HR"
+        groups: ["HR", "Domain Users"]
+
+      - name: "mkorhonen"
+        firstname: "Mikko"
+        surname: "Korhonen"
+        display_name: "Mikko Korhonen"
+        upn: "mkorhonen@blueteamlab.local"
+        password: "Team123!"
+        department: "Finance"
+        groups: ["Finance", "Domain Users"]
+
+      - name: "lmakinen"
+        firstname: "Laura"
+        surname: "Mäkinen"
+        display_name: "Laura Mäkinen"
+        upn: "lmakinen@blueteamlab.local"
+        password: "Team123!"
+        department: "HR"
+        groups: ["HR", "Domain Users"]
+
+      - name: "tvirta"
+        firstname: "Timo"
+        surname: "Virta"
+        display_name: "Timo Virta"
+        upn: "tvirta@blueteamlab.local"
+        password: "Team123!"
+        department: "IT"
+        groups: ["IT", "Domain Users"]
 
     service_account:
       name: "svc-http"
       display_name: "HTTP Service Account"
       upn: "svc-http@blueteamlab.local"
       password: "Team123!"
-      spns_add:
-        - "HTTP/log01.blueteamlab.local"
-        - "HTTP/log01"
+      spns:
+        - "HTTP/win-server.blueteamlab.local"
+        - "HTTP/win-server"
 
   tasks:
     - name: Ensure OUs exist
@@ -50,21 +105,60 @@
         domain_password: "{{ domain_admin_password }}"
       loop: "{{ ous }}"
 
-    - name: Create new user
+    - name: Create security groups
+      microsoft.ad.group:
+        name: "{{ item.name }}"
+        path: "{{ item.path }}"
+        scope: "{{ item.scope }}"
+        category: "{{ item.category }}"
+        state: present
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+      loop: "{{ ad_groups }}"
+
+    - name: Create new domain admin account
       microsoft.ad.user:
-        name: "{{ new_user.name }}"
-        firstname: "{{ new_user.firstname }}"
-        surname: "{{ new_user.surname }}"
-        display_name: "{{ new_user.display_name }}"
-        upn: "{{ new_user.upn }}"
-        password: "{{ new_user.password }}"
-        path: "{{ user_ou }}"
+        name: "{{ new_admin.name }}"
+        firstname: "{{ new_admin.firstname }}"
+        surname: "{{ new_admin.surname }}"
+        display_name: "{{ new_admin.display_name }}"
+        upn: "{{ new_admin.upn }}"
+        password: "{{ new_admin.password }}"
+        path: "OU=Admins,OU=Users,OU=BlueteamLab,{{ domain }}"
+        enabled: true
+        state: present
+        password_never_expires: true
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+        groups:
+          add:
+            - "Domain Admins"
+            - "Domain Users"
+
+    - name: Disable built-in Administrator account
+      microsoft.ad.user:
+        name: "Administrator"
+        enabled: false
+        state: present
+        domain_username: "{{ domain_admin_user }}"
+        domain_password: "{{ domain_admin_password }}"
+
+    - name: Create standard users
+      microsoft.ad.user:
+        name: "{{ item.name }}"
+        firstname: "{{ item.firstname }}"
+        surname: "{{ item.surname }}"
+        display_name: "{{ item.display_name }}"
+        upn: "{{ item.upn }}"
+        password: "{{ item.password }}"
+        path: "OU=Standard Users,OU=Users,OU=BlueteamLab,{{ domain }}"
         enabled: true
         state: present
         domain_username: "{{ domain_admin_user }}"
         domain_password: "{{ domain_admin_password }}"
         groups:
-          add: "{{ new_user.groups_add }}"
+          add: "{{ item.groups }}"
+      loop: "{{ standard_users }}"
 
     - name: Create service account
       microsoft.ad.user:
@@ -72,25 +166,38 @@
         display_name: "{{ service_account.display_name }}"
         upn: "{{ service_account.upn }}"
         password: "{{ service_account.password }}"
-        path: "{{ svc_ou }}"
+        path: "OU=Service Accounts,OU=BlueteamLab,{{ domain }}"
         enabled: true
         state: present
+        password_never_expires: true
         domain_username: "{{ domain_admin_user }}"
         domain_password: "{{ domain_admin_password }}"
         spn:
-          add: "{{ service_account.spns_add }}"
-
-    - name: Enable audit policies - Logon
+          add: "{{ service_account.spns }}"
+          
+    - name: Enable audit policies
       ansible.windows.win_shell: |
         auditpol /set /subcategory:"Logon" /success:enable /failure:enable
-      changed_when: false
-
-    - name: Enable audit policy - Kerberos Service Ticket Operations
-      ansible.windows.win_shell: |
+        auditpol /set /subcategory:"Account Logon" /success:enable /failure:enable
+        auditpol /set /subcategory:"Account Management" /success:enable /failure:enable
         auditpol /set /subcategory:"Kerberos Service Ticket Operations" /success:enable /failure:enable
+        auditpol /set /subcategory:"Directory Service Access" /success:enable /failure:enable
       changed_when: false
 
-    - name: Enable audit policy - Directory Service Access
+    - name: Move DC computer object to Domain Controllers OU
       ansible.windows.win_shell: |
-        auditpol /set /subcategory:"Directory Service Access" /success:enable /failure:enable
+        $dc = Get-ADComputer -Filter { Name -eq "dc01" } -ErrorAction SilentlyContinue
+        if ($dc) {
+          Move-ADObject -Identity $dc.DistinguishedName `
+            -TargetPath "OU=Domain Controllers,OU=Servers,OU=BlueteamLab,{{ domain }}"
+        }
+      changed_when: false
+
+    - name: Move workstation computer object to Workstations OU
+      ansible.windows.win_shell: |
+        $cl = Get-ADComputer -Filter { Name -eq "cl01" } -ErrorAction SilentlyContinue
+        if ($cl) {
+          Move-ADObject -Identity $cl.DistinguishedName `
+            -TargetPath "OU=Workstations,OU=BlueteamLab,{{ domain }}"
+        }
       changed_when: false
