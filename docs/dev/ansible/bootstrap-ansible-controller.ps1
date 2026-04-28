@@ -10,8 +10,8 @@ $VmPassword = "blue"
 $RepoUrl = "https://github.com/tommi-vsalo/BlueTeamLab.git"
 
 # Paths inside ansible-controller VM
-$TempRepoDir = "~/BlueTeamLab-temp"
-$TargetDir = "~/ansible-controller"
+$TempRepoDir = "/home/$VMUser/BlueTeamLab-temp"
+$TargetDir = "/home/$VMUser/ansible-controller"
 $InventoryDir = "$TargetDir/inventory"
 $PlaybookDir = "$TargetDir/playbooks"
 
@@ -33,8 +33,12 @@ function Invoke-VM {
     VBoxManage guestcontrol $ControllerVM run `
         --username $VmUser `
         --password $VmPassword `
-        --exe /bin/bash `
-        -- bash -lc "$Command"
+        --exe /usr/bin/bash `
+        -- "-lc" "$Command"
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed inside VM: $Command"
+    }
 }
 
 Write-Host "Preparing Ansible controller"
