@@ -1,21 +1,16 @@
-# Prepare-ansible-controller.ps1
 $ErrorActionPreference = "Stop"
 
-# Existing VirtualBox VM
 $ControllerVM = "Ansible-Controller"
 $VmUser = "student"
 $VmPassword = "blue"
 
-# GitHub repo
 $RepoUrl = "https://github.com/tommi-vsalo/BlueTeamLab.git"
 
-# Paths inside ansible-controller VM
 $TempRepoDir = "/home/$VMUser/BlueTeamLab-temp"
 $TargetDir = "/home/$VMUser/ansible-controller"
 $InventoryDir = "$TargetDir/inventory"
 $PlaybookDir = "$TargetDir/playbooks"
 
-# Lab values
 $DomainControllerName = "dc01"
 $DomainControllerIP = "10.10.10.10"
 
