@@ -1,16 +1,13 @@
 - name: AD Configuration on Domain Controller
   hosts: dc01
   gather_facts: false
-  become: true
-  become_method: runas
-  become_user: student
 
   vars:
     domain_name: "blueteamlab.local"
     domain: "DC=blueteamlab,DC=local"
 
-    domain_admin_user: "BLUETEAMLAB\\student"
-    domain_admin_password: "Team123!"
+    domain_admin_user: "BLUETEAMLAB\\Administrator"
+    domain_admin_password: "Blue123!"
 
     new_admin:
       name: "labadmin"
@@ -18,7 +15,7 @@
       surname: "Admin"
       display_name: "Lab Admin"
       upn: "labadmin@blueteamlab.local"
-      password: "Team123!"
+      password: "Blue123!"
 
     ous:
       # Top-level
@@ -135,14 +132,6 @@
             - "Domain Admins"
             - "Domain Users"
 
-    - name: Disable built-in Administrator account
-      microsoft.ad.user:
-        name: "Administrator"
-        enabled: false
-        state: present
-        domain_username: "{{ domain_admin_user }}"
-        domain_password: "{{ domain_admin_password }}"
-
     - name: Create standard users
       microsoft.ad.user:
         name: "{{ item.name }}"
@@ -174,7 +163,7 @@
         domain_password: "{{ domain_admin_password }}"
         spn:
           add: "{{ service_account.spns }}"
-          
+
     - name: Enable audit policies
       ansible.windows.win_shell: |
         auditpol /set /subcategory:"Logon" /success:enable /failure:enable
