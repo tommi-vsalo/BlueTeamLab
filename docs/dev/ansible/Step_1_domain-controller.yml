@@ -1,18 +1,15 @@
 - name: Domain Controller Setup
   hosts: dc01
   gather_facts: false
-  become: true
-  become_method: runas
-  become_user: student
 
   vars:
     domain_name: blueteamlab.local
     domain_netbios: BLUETEAMLAB
     dc_dns_ip: "10.10.10.20"
-    safe_mode_password: "Team123!"
+    safe_mode_password: "Blue123!"
 
   tasks:
-    - name: Set DNS client to the DC
+    - name: Set DNS client to point to itself
       ansible.windows.win_dns_client:
         adapter_names:
           - "Ethernet 2"
@@ -36,7 +33,7 @@
       when: ad_ds_install.reboot_required | default(false)
 
     - name: Promote server and create forest
-      ansible.windows.win_domain:
+      microsoft.ad.domain:
         dns_domain_name: "{{ domain_name }}"
         domain_netbios_name: "{{ domain_netbios }}"
         safe_mode_password: "{{ safe_mode_password }}"
@@ -44,12 +41,11 @@
 
     - name: Reboot after promotion
       ansible.windows.win_reboot:
-        msg: "Rebooting"
+        msg: "Rebooting after domain promotion"
         reboot_timeout: 3600
       when: promotion.reboot_required | default(true)
 
-    - name: Wait for reboot
-      ansible.windows.win_wait_for:
-        port: 5985
-        delay: 10
+    - name: Wait for WinRM to come back after reboot
+      ansible.builtin.wait_for_connection:
+        delay: 30
         timeout: 600
