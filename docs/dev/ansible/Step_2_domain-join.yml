@@ -1,16 +1,13 @@
 - name: Client Domain Configuration
   hosts: cl01
   gather_facts: false
-  become: true
-  become_method: runas
-  become_user: student
 
   vars:
     domain_name: blueteamlab.local
-    dc_dns_ip: "10.10.10.10"
+    dc_dns_ip: "10.10.10.20"
     client_dns_adapter: "Ethernet 2"
-    domain_join_user: "BLUETEAMLAB\\student"
-    domain_join_password: "Team123!"
+    domain_join_user: "BLUETEAMLAB\\Administrator"
+    domain_join_password: "Blue123!"
 
   tasks:
     - name: Set DNS to DC
@@ -19,13 +16,6 @@
           - "{{ client_dns_adapter }}"
         ipv4_addresses:
           - "{{ dc_dns_ip }}"
-
-    - name: Flush DNS cache
-      ansible.windows.win_shell: ipconfig /flushdns
-
-    - name: Wait for DNS to propagate
-      ansible.builtin.pause:
-        seconds: 10
 
     - name: Verify DC can be discovered
       ansible.windows.win_shell: |
@@ -38,17 +28,12 @@
         var: dc_check.stdout
 
     - name: Join domain
-      ansible.windows.win_domain_membership:
+      microsoft.ad.membership:
         dns_domain_name: "{{ domain_name }}"
         domain_admin_user: "{{ domain_join_user }}"
         domain_admin_password: "{{ domain_join_password }}"
         state: domain
       register: domain_join
-      ignore_errors: true
-
-    - name: Wait for domain join
-      ansible.builtin.pause:
-        seconds: 30
 
     - name: Reboot after domain join
       ansible.windows.win_reboot:
