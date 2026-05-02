@@ -33,6 +33,7 @@ terraform {
 provider "null" {}
 
 # COMMON IMPORT FUNCTION
+# Checks if the VM already exists before importing to avoid duplicate errors.
 
 locals {
   import_ps = <<-PS
@@ -49,7 +50,11 @@ locals {
   PS
 }
 
+# =============================================================================
 # ANSIBLE CONTROLLER (UBUNTU)
+# NIC1: NAT (DHCP, internet access for apt)
+# NIC2: Internal network (lab-int), static IP 10.10.10.10/24
+# =============================================================================
 
 resource "null_resource" "ansible_import" {
   provisioner "local-exec" {
@@ -69,9 +74,15 @@ resource "null_resource" "ansible_bootstrap" {
     interpreter = ["powershell","-NoProfile","-ExecutionPolicy","Bypass","-Command"]
     command = <<-PS
       $vm="Ansible-Controller"
+
+      # Configure VM hardware and network adapters
       VBoxManage modifyvm $vm --cpus 2 --memory 4096 --nic1 nat --nic2 intnet --intnet2 lab-int
       VBoxManage startvm $vm --type headless
+
+      # Wait for VirtualBox Guest Additions to report ready before proceeding
+      # Falls back to a fixed sleep if GA version property is not reported in time
       VBoxManage guestproperty wait $vm "/VirtualBox/GuestAdd/Version" --timeout 180000 | Out-Null
+      Start-Sleep -Seconds 10
 
       $script=@'
 #!/bin/sh
@@ -79,22 +90,41 @@ set -e
 
 PASS="blue"
 
-echo "Starting Ubuntu bootstrap..."
+echo "=== Ansible Controller Bootstrap ==="
 
+# Set hostname
 echo "$PASS" | sudo -S hostnamectl set-hostname ansible-con
+
+# Install required packages
 echo "$PASS" | sudo -S apt update
 echo "$PASS" | sudo -S apt install -y openssh-server locales
+
+# Configure locale and Finnish keyboard layout
 echo "$PASS" | sudo -S locale-gen en_US.UTF-8
 echo "$PASS" | sudo -S update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 echo "$PASS" | sudo -S sed -i 's/^XKBLAYOUT=.*/XKBLAYOUT="fi"/' /etc/default/keyboard
 echo "$PASS" | sudo -S setupcon || true
-echo "BOOTSTRAP OK at $(date)" | echo "$PASS" | sudo -S tee /tmp/bootstrap-status.txt
-echo "Ubuntu bootstrap finished!"
+
+# Configure static IP 10.10.10.10/24 on internal NIC (NIC2/enp0s8) via netplan
+# NIC1 (enp0s3) remains on DHCP for NAT internet access
+echo "$PASS" | sudo -S tee /etc/netplan/99-lab.yaml > /dev/null << 'NETPLAN'
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      addresses:
+        - 10.10.10.10/24
+NETPLAN
+echo "$PASS" | sudo -S netplan apply
+echo "$PASS" | sudo -S chmod 600 /etc/netplan/99-lab.yaml
+
+echo "=== Ansible Controller Bootstrap Complete ==="
 '@
 
       $tmp=[System.IO.Path]::GetTempFileName()+".sh"
       Set-Content $tmp $script -Encoding ASCII
 
+      # Copy bootstrap script to guest and execute it
       VBoxManage guestcontrol $vm copyto $tmp --target-directory /tmp/bootstrap.sh --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
       Remove-Item $tmp -Force
 
@@ -104,7 +134,12 @@ echo "Ubuntu bootstrap finished!"
   }
 }
 
-# WINDOWS SERVER
+# =============================================================================
+# WINDOWS SERVER (Domain Controller)
+# NIC1: NAT (DHCP, internet access)
+# NIC2: Internal network (lab-int), static IP 10.10.10.20/24
+# Hostname: dc01
+# =============================================================================
 
 resource "null_resource" "winserver_import" {
   provisioner "local-exec" {
@@ -124,17 +159,22 @@ resource "null_resource" "winserver_bootstrap" {
     interpreter = ["powershell","-NoProfile","-ExecutionPolicy","Bypass","-Command"]
     command = <<-PS
       $vm="Windows-Server"
+
+      # Configure VM hardware and network adapters
       VBoxManage modifyvm $vm --cpus 2 --memory 4096 --nic1 nat --nic2 intnet --intnet2 lab-int
       VBoxManage startvm $vm --type headless
+
+      # Wait for Guest Additions then allow Windows to finish initializing
       VBoxManage guestproperty wait $vm "/VirtualBox/GuestAdd/Version" --timeout 240000 | Out-Null
       Start-Sleep -Seconds 20
 
       $script=@'
-Write-Output "Starting Windows Server bootstrap..."
+Write-Output "=== Windows Server Bootstrap ==="
 
 $Hostname = "dc01"
 
-Write-Output "Waiting for network identification..."
+# Wait for network adapters to finish identifying before setting profile
+Write-Output "Waiting for network identification to complete..."
 $maxWait = 60
 $waited = 0
 while ($waited -lt $maxWait) {
@@ -147,11 +187,13 @@ Get-NetConnectionProfile |
 Where-Object { $_.NetworkCategory -eq "Public" } |
 Set-NetConnectionProfile -NetworkCategory Private
 
+# Rename computer to dc01
 if ((hostname) -ne $Hostname) {
     Rename-Computer -NewName $Hostname -Force
 }
 
-Write-Output "Configuring static IP 10.10.10.20/24 on internal NIC"
+# Set static IP 10.10.10.20/24 on internal NIC (NIC2, no default gateway)
+Write-Output "Configuring static IP 10.10.10.20/24 on internal NIC..."
 $intNic = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } |
     Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -eq $null } |
     Select-Object -First 1 -ExpandProperty InterfaceAlias
@@ -165,8 +207,11 @@ if ($intNic) {
     Write-Output "WARNING: Could not find internal NIC"
 }
 
+# Enable ICMP (ping) for lab connectivity testing
 Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In
 
+# Configure WinRM for Ansible connectivity (basic auth over HTTP on port 5985)
+Write-Output "Configuring WinRM for Ansible..."
 winrm quickconfig -q
 Start-Service WinRM
 Set-Service WinRM -StartupType Automatic
@@ -174,12 +219,14 @@ Start-Sleep -Seconds 5
 Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
 Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
 
+# Set Finnish keyboard and locale
+Write-Output "Configuring Finnish keyboard and locale..."
 Set-WinUILanguageOverride -Language fi-FI
 Set-WinUserLanguageList "fi-FI" -Force
 Set-WinSystemLocale fi-FI
 Set-Culture fi-FI
 
-Write-Output "Bootstrap completed successfully"
+Write-Output "=== Windows Server Bootstrap Complete - Rebooting ==="
 Start-Sleep -Seconds 5
 Restart-Computer -Force
 '@
@@ -187,6 +234,7 @@ Restart-Computer -Force
       $tmp=[System.IO.Path]::GetTempFileName()+".ps1"
       Set-Content $tmp $script -Encoding UTF8
 
+      # Copy bootstrap script to guest and execute it
       VBoxManage guestcontrol $vm copyto $tmp --target-directory C:\\Windows\\Temp\\bootstrap.ps1 --username "${var.windows_server_user}" --password "${var.windows_server_password}"
       Remove-Item $tmp -Force
 
@@ -196,7 +244,12 @@ Restart-Computer -Force
   }
 }
 
-# WINDOWS CLIENT
+# =============================================================================
+# WINDOWS CLIENT (Workstation)
+# NIC1: NAT (DHCP, internet access)
+# NIC2: Internal network (lab-int), static IP 10.10.10.30/24
+# Hostname: cl01
+# =============================================================================
 
 resource "null_resource" "winclient_import" {
   provisioner "local-exec" {
@@ -216,17 +269,22 @@ resource "null_resource" "winclient_bootstrap" {
     interpreter = ["powershell","-NoProfile","-ExecutionPolicy","Bypass","-Command"]
     command = <<-PS
       $vm="Windows-Client"
+
+      # Configure VM hardware and network adapters
       VBoxManage modifyvm $vm --cpus 2 --memory 4096 --nic1 nat --nic2 intnet --intnet2 lab-int
       VBoxManage startvm $vm --type headless
+
+      # Wait for Guest Additions then allow Windows to finish initializing
       VBoxManage guestproperty wait $vm "/VirtualBox/GuestAdd/Version" --timeout 240000 | Out-Null
       Start-Sleep -Seconds 20
 
       $script=@'
-Write-Output "Starting Windows Client bootstrap..."
+Write-Output "=== Windows Client Bootstrap ==="
 
 $Hostname = "cl01"
 
-Write-Output "Waiting for network identification..."
+# Wait for network adapters to finish identifying before setting profile
+Write-Output "Waiting for network identification to complete..."
 $maxWait = 60
 $waited = 0
 while ($waited -lt $maxWait) {
@@ -239,6 +297,7 @@ Get-NetConnectionProfile |
 Where-Object { $_.NetworkCategory -eq "Public" } |
 Set-NetConnectionProfile -NetworkCategory Private
 
+# Rename computer to cl01
 if ((hostname) -ne $Hostname) {
     Write-Output "Renaming computer to $Hostname"
     Rename-Computer -NewName $Hostname -Force
@@ -246,7 +305,8 @@ if ((hostname) -ne $Hostname) {
     Write-Output "Hostname already correct"
 }
 
-Write-Output "Configuring static IP 10.10.10.30/24 on internal NIC"
+# Set static IP 10.10.10.30/24 on internal NIC (NIC2, no default gateway)
+Write-Output "Configuring static IP 10.10.10.30/24 on internal NIC..."
 $intNic = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } |
     Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -eq $null } |
     Select-Object -First 1 -ExpandProperty InterfaceAlias
@@ -260,22 +320,24 @@ if ($intNic) {
     Write-Output "WARNING: Could not find internal NIC"
 }
 
+# Enable ICMP (ping) for lab connectivity testing
 Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In
 
-Write-Output "Disabling autologin"
-reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /f
-reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /f
-reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /f
+# Remove autologin registry keys left by OVA preparation
+Write-Output "Disabling autologin..."
+$regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+Remove-ItemProperty -Path $regPath -Name "AutoAdminLogon" -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path $regPath -Name "DefaultUserName"  -ErrorAction SilentlyContinue
+Remove-ItemProperty -Path $regPath -Name "DefaultPassword"  -ErrorAction SilentlyContinue
 
-Write-Output "Configuring language (EN) and keyboard (FI)"
-
+# Set Finnish keyboard and locale
+Write-Output "Configuring Finnish keyboard and locale..."
 Set-WinUILanguageOverride -Language fi-FI
 Set-WinUserLanguageList "fi-FI" -Force
 Set-WinSystemLocale fi-FI
 Set-Culture fi-FI
 
-Write-Output "Bootstrap completed"
-
+Write-Output "=== Windows Client Bootstrap Complete - Rebooting ==="
 Start-Sleep -Seconds 5
 Restart-Computer -Force
 '@
@@ -283,6 +345,7 @@ Restart-Computer -Force
       $tmp=[System.IO.Path]::GetTempFileName()+".ps1"
       Set-Content $tmp $script -Encoding UTF8
 
+      # Copy bootstrap script to guest and execute it
       VBoxManage guestcontrol $vm copyto $tmp --target-directory C:\\Windows\\Temp\\bootstrap.ps1 --username "${var.windows_client_user}" --password "${var.windows_client_password}"
       Remove-Item $tmp -Force
 
