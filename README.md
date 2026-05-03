@@ -31,7 +31,7 @@ Ensure you have the following tools on your Windows host machine:
 - **VBoxManage** (bundled with VirtualBox)
 - **OpenTofu** (Terraform-compatible IaC tool)
 
-Next, install the three OVA machine images. They can be publically accessed at:
+Next, install the three OVA machine images. They can be publically accessed at: [Download OVA images from OneDrive](https://haagahelia-my.sharepoint.com/:f:/g/personal/bhi059_myy_haaga-helia_fi/IgAnyOxskC_LRZZHm030ZCBJAduVs5JJIdX-yw8xf-fHfWI?e=g3pair)
 
 Alternatively you can create your own OVA-images with the following instructions:
 
@@ -39,7 +39,7 @@ Alternatively you can create your own OVA-images with the following instructions
 - Use VirtualBox unattended installation to create VMs with guest additions and usernames / passwords
 - Export the VMs as OVAs
 
-Finally, install the most recent **release** from the BlueTeamLab GitHub page. This takes the form of a zip-file, which forms the project home directory *./BlueTeamLab*. The zip-file contains all necessary configuration files for the lab. The release contains a **README** file, which will guide the provisioning and use of the lab.
+Finally, install the most recent **release** from the BlueTeamLab GitHub page. This takes the form of a zip-file, which forms the project home directory *./BlueTeamLab*. The zip-file contains all necessary configuration files for the lab. The zip-file also contains a **README** file, which will guide the provisioning and use of the lab.
 
 
 ## Note
