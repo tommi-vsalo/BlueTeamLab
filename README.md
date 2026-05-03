@@ -1,46 +1,42 @@
 # BlueTeamLab
 
-# User Guide for BlueTeamLab
-
 ## What is the purpose of this lab?
 
-This lab is a training environment where students can explore and test:
-- Windows Active Directory basics.
-- Interaction between domain machine and workstation.
-- Log collection and reading.
-- Small practice attacks and defenses.
-- A general Windows/Ubuntu server environment.
-- Infrastructure-as-Code using OpenTofu.
-- How virtual machines are deployed automatically using VirtualBox + OVA images
+This lab is a training environment where students and other interested parties can explore and test:
+- Windows Active Directory basics
+- Interactive lab environment
+- Working with Windows and Ubuntu virtualmachines
+- Infrastructure-as-Code using OpenTofu and Ansible.
 
-All machines run in **VirtualBox** and are automatically created with the **OpenTofu** tool.
+The project utilizes **OpenTofu** and **Ansible** to create an lab environment in **VirtualBox** quickly, and with minimal manual effort.
 
 
 ## Virtual Machines
 
-The lab contains 4 machines, each with its own role.
+The lab contains 3 machines, each with their own roles. They are connected through an internal network and can access the internet through NAT.
 
 
 | Virtual Machine | Hostname | Purpose | NIC1 | NIC2 |
 |----------|----------|----------|----------|----------|
-| Ansible Controller | ansible-con | Management server (Ansible) | NAT | lab-int |
-| Windows Server | dc01 | Domain Controller (AD DS + DNS) | NAT | lab-int |
-| Windows Client | cl01 | Client workstation (joins domain) | NAT | lab-int |
-| Logging Server | log01 | Logging server | NAT | lab-int |
+| Ansible Controller | ansible-con | Ansible control node | NAT | lab-int |
+| Windows Server | dc01 | Domain Controller | NAT | lab-int |
+| Windows Client | cl01 | Client workstation | NAT | lab-int |
 
 
 ## Prerequisites
 
-Install the following tools:
+Ensure you have the following tools on your Windows host machine:
 
 - **VirtualBox 7.2.6**
 - **VBoxManage** (bundled with VirtualBox)
 - **OpenTofu** (Terraform-compatible IaC tool)
-- **PowerShell** (Windows host recommended)
 
-Create a project folder and make sure it looks like this:
+Next, install the most recent **release** from the BlueTeamLab GitHub page. This takes the form of a zip-file, which forms the project home directory *./BlueTeamLab*. The zip-file contains all necessary configuration files for the lab.
 
-<img width="517" height="451" alt="image" src="https://github.com/user-attachments/assets/26d6f397-3926-472a-a4bc-514a68e66ab5" />
+Finally, install the three OVA. machine images. They can be accessed at:
+
+Alternatively you can create your own OVA. images. This can easily be accomplished through an VirtualBox unattended install.
+
 
 ### Important note for Windows users!
 If OpenTofu fails and gives a `VBoxManage` error, VirtualBox may not be in your system path.
@@ -124,14 +120,12 @@ This unregisters and deletes all VirtualBox machines.
 
 ### Infrastructure
 - [ ] OpenTofu executes `tofu apply` without errors
-- [ ] All four virtual machines are visible in VirtualBox
-- [ ] Network card order is correct (NIC1 = NAT, NIC2 = lab-int)
+- [ ] All three virtual machines are visible in VirtualBox
 
 ### Basic virtual machine checks
 - [ ] dc01 starts successfully
 - [ ] cl01 starts successfully
 - [ ] ansible-con starts successfully
-- [ ] log01 starts successfully
 
 ### Network
 - [ ] dc01 responds to ping command from cl01
@@ -197,7 +191,8 @@ The evaluation license is for a limited time.
 ### Windows Client
 The Windows Client virtual machine is based on **Windows 10 Pro**.
 The system is used without activation for educational purposes.
-Commercial use is not intended.
+Commercial use is not intended. Users are responsible for complying
+with Microsoft's licensing terms in their own environment.
 
 ### Ansible-Controller & Logging-Server
 Ubuntu Server is distributed under open source licenses.
@@ -207,6 +202,3 @@ The software is free to use for educational purposes.
 The lab environment uses **Oracle VirtualBox 7.2.6**.
 VirtualBox Guest Additions are installed on the virtual machines to improve graphics, networking, and host-guest integration.
 Guest Additions are used under the **VirtualBox Personal Use and Evaluation License (PUEL)** for educational and testing purposes only.
-
-### Distribution
-OVA images are **not distributed publicly**.
