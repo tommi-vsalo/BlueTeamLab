@@ -9,6 +9,15 @@
     safe_mode_password: "Blue123!"
 
   tasks:
+    - name: Set hostname to dc01
+      ansible.windows.win_hostname:
+        name: dc01
+      register: hostname_result
+
+    - name: Reboot if hostname changed
+      ansible.windows.win_reboot:
+      when: hostname_result is changed
+
     - name: Set DNS client to point to itself
       ansible.windows.win_dns_client:
         adapter_names:
