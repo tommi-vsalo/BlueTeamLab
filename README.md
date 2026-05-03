@@ -140,41 +140,6 @@ This unregisters and deletes all VirtualBox machines.
 - [ ] Basic AD tools are open on dc01
 
 
-
-## Troubleshooting
-
-### Virtual Machine doesn't import?
-Check that images exist:
-
-<img width="382" height="586" alt="image" src="https://github.com/user-attachments/assets/bdc1b5e9-a2c2-4acf-8867-b8b8f7949069" />
-
-
-### Clients can't find domain?
-DNS must point to dc01 = 10.10.10.10
-
-If necessary, run:
-```
-ipconfig /flushdns
-```
-
-
-### Networking broken after import
-1. Restart VirtualBox
-2. Ensure lab-int exists
-3. Verify NIC order (NAT first, Internal second)
-
-
-### Ubuntu displays a black screen on first boot
-
-On some systems, Ubuntu virtual machines may initially display a black screen.
-
-- This may resolve itself after a short wait.
-- Guest Additions are already stored in the disk images. This reduces the amount of manual configuration required from students.
-- Once the system has booted, normal operation is expected.
-
-This does not indicate a failed installation.
-
-
 ## Note
 This lab is provided for **educational use only**.
 The user guide is iteratively improved during the prototype phase.
