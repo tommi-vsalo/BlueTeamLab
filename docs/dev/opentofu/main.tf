@@ -136,11 +136,11 @@ echo "=== Ansible Controller Bootstrap Complete ==="
 
       # Copy Ansible files
       Write-Host "Copying Ansible files..."
-      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\ansible.cfg" --target-directory /home/admin/blueteamlabs/ansible.cfg --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
-      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\hosts.ini" --target-directory /home/admin/blueteamlabs/inventory/hosts.ini --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
-      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_1_domain-controller.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
-      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_2_domain-join.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
-      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_3_ad_config.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "${path.module}\ansible.cfg" --target-directory /home/admin/blueteamlabs/ansible.cfg --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "${path.module}\hosts.ini" --target-directory /home/admin/blueteamlabs/inventory/hosts.ini --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "${path.module}\Step_1_domain-controller.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "${path.module}\Step_2_domain-join.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "${path.module}\Step_3_ad_config.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
     PS
   }
 }
