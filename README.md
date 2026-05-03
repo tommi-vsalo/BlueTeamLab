@@ -31,113 +31,15 @@ Ensure you have the following tools on your Windows host machine:
 - **VBoxManage** (bundled with VirtualBox)
 - **OpenTofu** (Terraform-compatible IaC tool)
 
-Next, install the most recent **release** from the BlueTeamLab GitHub page. This takes the form of a zip-file, which forms the project home directory *./BlueTeamLab*. The zip-file contains all necessary configuration files for the lab.
+Next, install the three OVA machine images. They can be publically accessed at:
 
-Finally, install the three OVA. machine images. They can be accessed at:
+Alternatively you can create your own OVA-images with the following instructions:
 
-Alternatively you can create your own OVA. images. This can easily be accomplished through an VirtualBox unattended install.
+- Download the necessary ISO / LTS files (Windows Server 2022, Windows 10 Evaluation, Ubuntu 24.04)
+- Use VirtualBox unattended installation to create VMs with guest additions and usernames / passwords
+- Export the VMs as OVAs
 
-
-### Important note for Windows users!
-If OpenTofu fails and gives a `VBoxManage` error, VirtualBox may not be in your system path.
-
-If this happens:
-- Open **System Settings**
-- Go to **Advanced System Settings**
-- Open **Environment Variables**
-- Add the VirtualBox installation directory to your PATH
-- Restart PowerShell after making the changes
-
-This is a known issue on some Windows systems.
-
-
-
-## How to start the lab?
-
-### Step 1 (OVA images are not yet in public distribution!!!)
-Upload the OVA images and save them in the images folder.
-
-### Step 2
-Open Powershell as admin.
-
-### Step 3
-Navigate to the lab folder.
-```
-cd lab
-```
-
-### Step 4
-Initialize OpenTofu.
-```
-tofu init
-```
-
-### Step 5
-Create all Virtual Machines.
-```
-tofu apply
-```
-
-Initial setup may take several minutes depending on your system.
-Please expect approximately:
-- 5-10 minutes of setup time
-- approximately 30 GB of disk space usage
-
-This is normal during first use.
-
-Opentofu will do the following:
-- Import all OVA images.
-- Create VMs in VirtualBox.
-- Configure CPU, RAM, VRAM.
-- Add NAT + lab-int network adapters.
-- Assign VM names.
-- Ensure reproducible infrastructure.
-
-
-## Login Credentials
-
-### Ansible & Logging (= Ubuntu virtual machines)
-User: student
-Password: team
-
-
-### Server & Client (= Windows virtual machines)
-User: student
-Password: Team123!
-
-
-## How to end the lab?
-
-To end the lab, enter the command
-```
-tofu destroy
-```
-
-This unregisters and deletes all VirtualBox machines.
-
-
-## Quick Test Checklist
-
-### Infrastructure
-- [ ] OpenTofu executes `tofu apply` without errors
-- [ ] All three virtual machines are visible in VirtualBox
-
-### Basic virtual machine checks
-- [ ] dc01 starts successfully
-- [ ] cl01 starts successfully
-- [ ] ansible-con starts successfully
-
-### Network
-- [ ] dc01 responds to ping command from cl01
-- [ ] cl01 resolves dc01 via DNS
-- [ ] lab-int network is reachable between machines
-
-### Login credentials
-- [ ] User `student` can log in to all machines
-
-### Optional (when AD is configured)
-- [ ] cl01 can join the domain
-- [ ] Basic AD tools are open on dc01
+Finally, install the most recent **release** from the BlueTeamLab GitHub page. This takes the form of a zip-file, which forms the project home directory *./BlueTeamLab*. The zip-file contains all necessary configuration files for the lab. The release contains a **README** file, which will guide the provisioning and use of the lab.
 
 
 ## Note
