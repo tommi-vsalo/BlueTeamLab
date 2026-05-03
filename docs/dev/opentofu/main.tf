@@ -78,11 +78,8 @@ resource "null_resource" "ansible_bootstrap" {
       # Configure VM hardware and network adapters
       VBoxManage modifyvm $vm --cpus 2 --memory 4096 --nic1 nat --nic2 intnet --intnet2 lab-int
       VBoxManage startvm $vm --type headless
-
-      # Wait for VirtualBox Guest Additions to report ready before proceeding
-      # Falls back to a fixed sleep if GA version property is not reported in time
+	    # Wait for GuestAddition connection
       VBoxManage guestproperty wait $vm "/VirtualBox/GuestAdd/Version" --timeout 180000 | Out-Null
-      Start-Sleep -Seconds 10
 
       $script=@'
 #!/bin/sh
@@ -97,7 +94,8 @@ echo "$PASS" | sudo -S hostnamectl set-hostname ansible-con
 
 # Install required packages
 echo "$PASS" | sudo -S apt update
-echo "$PASS" | sudo -S apt install -y openssh-server locales
+echo "$PASS" | sudo -S apt install -y openssh-server locales ansible python3-pip
+echo "$PASS" | sudo -S pip3 install pywinrm --break-system-packages || true
 
 # Configure locale and Finnish keyboard layout
 echo "$PASS" | sudo -S locale-gen en_US.UTF-8
@@ -130,6 +128,19 @@ echo "=== Ansible Controller Bootstrap Complete ==="
 
       Write-Host "Running bootstrap script on guest..."
       VBoxManage guestcontrol $vm run --username "${var.ubuntu_user}" --password "${var.ubuntu_password}" --exe /bin/bash -- "" /tmp/bootstrap.sh
+
+      # Create Ansible directory structure
+      Write-Host "Creating Ansible directory structure..."
+      VBoxManage guestcontrol $vm run --username "${var.ubuntu_user}" --password "${var.ubuntu_password}" --exe /bin/mkdir -- "" -p /home/admin/blueteamlabs/inventory
+      VBoxManage guestcontrol $vm run --username "${var.ubuntu_user}" --password "${var.ubuntu_password}" --exe /bin/mkdir -- "" -p /home/admin/blueteamlabs/playbooks
+
+      # Copy Ansible files
+      Write-Host "Copying Ansible files..."
+      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\ansible.cfg" --target-directory /home/admin/blueteamlabs/ansible.cfg --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\hosts.ini" --target-directory /home/admin/blueteamlabs/inventory/hosts.ini --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_1_domain-controller.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_2_domain-join.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
+      VBoxManage guestcontrol $vm copyto "D:\BlueTeamLab\Step_3_ad_config.yml" --target-directory /home/admin/blueteamlabs/playbooks/ --username "${var.ubuntu_user}" --password "${var.ubuntu_password}"
     PS
   }
 }
@@ -142,6 +153,7 @@ echo "=== Ansible Controller Bootstrap Complete ==="
 # =============================================================================
 
 resource "null_resource" "winserver_import" {
+  depends_on = [null_resource.ansible_bootstrap]
   provisioner "local-exec" {
     interpreter = ["powershell","-NoProfile","-ExecutionPolicy","Bypass","-Command"]
     command     = local.import_ps
@@ -171,64 +183,36 @@ resource "null_resource" "winserver_bootstrap" {
       $script=@'
 Write-Output "=== Windows Server Bootstrap ==="
 
-$Hostname = "dc01"
+# 1. Set static IP on internal NIC (Ethernet 2)
+Write-Output "Configuring static IP 10.10.10.20/24 on Ethernet 2..."
+$existing = Get-NetIPAddress -InterfaceAlias "Ethernet 2" -AddressFamily IPv4 -ErrorAction SilentlyContinue
+if ($existing) { Remove-NetIPAddress -InterfaceAlias "Ethernet 2" -AddressFamily IPv4 -Confirm:$false }
+New-NetIPAddress -InterfaceAlias "Ethernet 2" -IPAddress "10.10.10.20" -PrefixLength 24
 
-# Wait for network adapters to finish identifying before setting profile
-Write-Output "Waiting for network identification to complete..."
-$maxWait = 60
-$waited = 0
-while ($waited -lt $maxWait) {
-    $identifying = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Identifying" }
-    if (-not $identifying) { break }
-    Start-Sleep -Seconds 5
-    $waited += 5
-}
-Get-NetConnectionProfile |
-Where-Object { $_.NetworkCategory -eq "Public" } |
-Set-NetConnectionProfile -NetworkCategory Private
+# 2. Set network profile to Private via NLM COM (must happen before WinRM config)
+$nlm = [Activator]::CreateInstance([Type]::GetTypeFromCLSID('DCB00C01-570F-4A9B-8D69-199FDBA5723B'))
+$nlm.GetNetworks(1) | ForEach-Object { $_.SetCategory(1) }
 
-# Rename computer to dc01
-if ((hostname) -ne $Hostname) {
-    Rename-Computer -NewName $Hostname -Force
-}
-
-# Set static IP 10.10.10.20/24 on internal NIC (NIC2, no default gateway)
-Write-Output "Configuring static IP 10.10.10.20/24 on internal NIC..."
-$intNic = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } |
-    Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -eq $null } |
-    Select-Object -First 1 -ExpandProperty InterfaceAlias
-
-if ($intNic) {
-    $existing = Get-NetIPAddress -InterfaceAlias $intNic -AddressFamily IPv4 -ErrorAction SilentlyContinue
-    if ($existing) { Remove-NetIPAddress -InterfaceAlias $intNic -AddressFamily IPv4 -Confirm:$false }
-    New-NetIPAddress -InterfaceAlias $intNic -IPAddress "10.10.10.20" -PrefixLength 24 -ErrorAction SilentlyContinue
-    Write-Output "Static IP set on $intNic"
-} else {
-    Write-Output "WARNING: Could not find internal NIC"
-}
-
-# Enable ICMP (ping) for lab connectivity testing
+# 3. Enable ICMP and all WinRM firewall rules across all profiles
 Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In
+Get-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)" | Enable-NetFirewallRule
 
-# Configure WinRM for Ansible connectivity (basic auth over HTTP on port 5985)
+# 4. Configure WinRM for Ansible
 Write-Output "Configuring WinRM for Ansible..."
-winrm quickconfig -q
 Start-Service WinRM
 Set-Service WinRM -StartupType Automatic
-Start-Sleep -Seconds 5
+winrm quickconfig -q
 Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
 Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
 
-# Set Finnish keyboard and locale
+# 5. Set Finnish keyboard and locale
 Write-Output "Configuring Finnish keyboard and locale..."
 Set-WinUILanguageOverride -Language fi-FI
 Set-WinUserLanguageList "fi-FI" -Force
 Set-WinSystemLocale fi-FI
 Set-Culture fi-FI
 
-Write-Output "=== Windows Server Bootstrap Complete - Rebooting ==="
-Start-Sleep -Seconds 5
-Restart-Computer -Force
+Write-Output "=== Windows Server Bootstrap Complete ===" 
 '@
 
       $tmp=[System.IO.Path]::GetTempFileName()+".ps1"
@@ -240,6 +224,7 @@ Restart-Computer -Force
 
       Write-Host "Running bootstrap script on guest..."
       VBoxManage guestcontrol $vm run --exe "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" --username "${var.windows_server_user}" --password "${var.windows_server_password}" --wait-stdout --wait-stderr -- powershell -ExecutionPolicy Bypass -File "C:\Windows\Temp\bootstrap.ps1"
+
     PS
   }
 }
@@ -252,6 +237,7 @@ Restart-Computer -Force
 # =============================================================================
 
 resource "null_resource" "winclient_import" {
+  depends_on = [null_resource.ansible_bootstrap]
   provisioner "local-exec" {
     interpreter = ["powershell","-NoProfile","-ExecutionPolicy","Bypass","-Command"]
     command     = local.import_ps
@@ -281,65 +267,43 @@ resource "null_resource" "winclient_bootstrap" {
       $script=@'
 Write-Output "=== Windows Client Bootstrap ==="
 
-$Hostname = "cl01"
+# 1. Set static IP on internal NIC (Ethernet 2)
+Write-Output "Configuring static IP 10.10.10.30/24 on Ethernet 2..."
+$existing = Get-NetIPAddress -InterfaceAlias "Ethernet 2" -AddressFamily IPv4 -ErrorAction SilentlyContinue
+if ($existing) { Remove-NetIPAddress -InterfaceAlias "Ethernet 2" -AddressFamily IPv4 -Confirm:$false }
+New-NetIPAddress -InterfaceAlias "Ethernet 2" -IPAddress "10.10.10.30" -PrefixLength 24
 
-# Wait for network adapters to finish identifying before setting profile
-Write-Output "Waiting for network identification to complete..."
-$maxWait = 60
-$waited = 0
-while ($waited -lt $maxWait) {
-    $identifying = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Identifying" }
-    if (-not $identifying) { break }
-    Start-Sleep -Seconds 5
-    $waited += 5
-}
-Get-NetConnectionProfile |
-Where-Object { $_.NetworkCategory -eq "Public" } |
-Set-NetConnectionProfile -NetworkCategory Private
+# 2. Set network profile to Private via NLM COM (must happen before WinRM config)
+$nlm = [Activator]::CreateInstance([Type]::GetTypeFromCLSID('DCB00C01-570F-4A9B-8D69-199FDBA5723B'))
+$nlm.GetNetworks(1) | ForEach-Object { $_.SetCategory(1) }
 
-# Rename computer to cl01
-if ((hostname) -ne $Hostname) {
-    Write-Output "Renaming computer to $Hostname"
-    Rename-Computer -NewName $Hostname -Force
-} else {
-    Write-Output "Hostname already correct"
-}
-
-# Set static IP 10.10.10.30/24 on internal NIC (NIC2, no default gateway)
-Write-Output "Configuring static IP 10.10.10.30/24 on internal NIC..."
-$intNic = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } |
-    Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -eq $null } |
-    Select-Object -First 1 -ExpandProperty InterfaceAlias
-
-if ($intNic) {
-    $existing = Get-NetIPAddress -InterfaceAlias $intNic -AddressFamily IPv4 -ErrorAction SilentlyContinue
-    if ($existing) { Remove-NetIPAddress -InterfaceAlias $intNic -AddressFamily IPv4 -Confirm:$false }
-    New-NetIPAddress -InterfaceAlias $intNic -IPAddress "10.10.10.30" -PrefixLength 24 -ErrorAction SilentlyContinue
-    Write-Output "Static IP set on $intNic"
-} else {
-    Write-Output "WARNING: Could not find internal NIC"
-}
-
-# Enable ICMP (ping) for lab connectivity testing
+# 3. Enable ICMP and all WinRM firewall rules across all profiles
 Enable-NetFirewallRule -Name FPS-ICMP4-ERQ-In
+Get-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)" | Enable-NetFirewallRule
 
-# Remove autologin registry keys left by OVA preparation
+# 4. Configure WinRM for Ansible
+Write-Output "Configuring WinRM for Ansible..."
+Start-Service WinRM
+Set-Service WinRM -StartupType Automatic
+winrm quickconfig -q
+Set-Item WSMan:\localhost\Service\Auth\Basic -Value $true
+Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $true
+
+# 5. Remove autologin registry keys left by OVA preparation
 Write-Output "Disabling autologin..."
 $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 Remove-ItemProperty -Path $regPath -Name "AutoAdminLogon" -ErrorAction SilentlyContinue
 Remove-ItemProperty -Path $regPath -Name "DefaultUserName"  -ErrorAction SilentlyContinue
 Remove-ItemProperty -Path $regPath -Name "DefaultPassword"  -ErrorAction SilentlyContinue
 
-# Set Finnish keyboard and locale
+# 6. Set Finnish keyboard and locale
 Write-Output "Configuring Finnish keyboard and locale..."
 Set-WinUILanguageOverride -Language fi-FI
 Set-WinUserLanguageList "fi-FI" -Force
 Set-WinSystemLocale fi-FI
 Set-Culture fi-FI
 
-Write-Output "=== Windows Client Bootstrap Complete - Rebooting ==="
-Start-Sleep -Seconds 5
-Restart-Computer -Force
+Write-Output "=== Windows Client Bootstrap Complete ===" 
 '@
 
       $tmp=[System.IO.Path]::GetTempFileName()+".ps1"
@@ -351,6 +315,7 @@ Restart-Computer -Force
 
       Write-Host "Running bootstrap script on guest..."
       VBoxManage guestcontrol $vm run --exe "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" --username "${var.windows_client_user}" --password "${var.windows_client_password}" --wait-stdout --wait-stderr -- powershell -ExecutionPolicy Bypass -File "C:\Windows\Temp\bootstrap.ps1"
+
     PS
   }
 }
